@@ -6,5 +6,6 @@
 *.nfs*
 *.sh
 *.out
+*.json
 *.ipynb*
 *.vscode*

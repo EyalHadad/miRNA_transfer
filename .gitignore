@@ -1,0 +1,10 @@
+.idea
+*.pyc
+*.csv
+*.png
+*.h5
+*.nfs*
+*.sh
+*.out
+*.ipynb*
+*.vscode*

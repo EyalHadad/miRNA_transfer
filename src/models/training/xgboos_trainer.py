@@ -31,7 +31,7 @@ class XgboostTrainObj:
         y = train['label']
         x = train.drop(['label'], axis=1)
         x = np.asarray(x).astype('float32')
-        self.x, self.xval, self.y, self.yval = train_test_split(x, y, test_size=0.1, random_state=42)
+        self.x, self.xval, self.y, self.yval = train_test_split(x, y, test_size=0.2, random_state=42)
         print("---Start training---\n")
         eval_s = [(self.x, self.y), (self.xval, self.yval)]
         print("---Start training---\n")
@@ -41,11 +41,6 @@ class XgboostTrainObj:
         model_name = os.path.join(MODELS_OBJECTS_PATH,
                                   'xgboost_{0}_{1}.json'.format(self.org_name, strftime("%Y-%m-%d", gmtime())))
         self.model.save_model(model_name)
-
-        # plt.figure(figsize=(16, 12))
-        # xgb.plot_importance(self.model)
-        # plt.show()
-
 
 
     def plot_learning_curves(self):
@@ -83,10 +78,10 @@ class XgboostTrainObj:
         x = test.drop(['label'], axis=1)
         x = np.asarray(x).astype('float32')
         pred = self.model.predict(x)
-        model_name =  'xgboost_{0}'.format(self.org_name)
+        model_name = 'xgboost_{0}'.format(self.org_name)
         date_time = datetime.now().strftime("%d_%m_%Y %H_%M_%S")
         eval_dict = {'Model':model_name, 'Date': date_time, 'ACC': metrics.accuracy_score(y, pred)}
-        eval_dict['FPR'], eval_dict['TPR'], thresholds = metrics.roc_curve(y, pred, pos_label=2)
+        eval_dict['FPR'], eval_dict['TPR'], thresholds = metrics.roc_curve(y, pred)
         eval_dict['AUC'] = metrics.auc(eval_dict['FPR'], eval_dict['TPR'])
         eval_dict['MCC'] = metrics.matthews_corrcoef(y, pred)
         eval_dict['F1_score'] = metrics.f1_score(y, pred)
@@ -94,3 +89,4 @@ class XgboostTrainObj:
         pred_res = pd.DataFrame(zip(pred, y), columns=['pred', 'y'])
         pred_res.to_csv(os.path.join(MODELS_PREDICTION_PATH, "pred_{0}_{1}.csv".format(model_name,date_time)),index=False)
 
+    #Eyal

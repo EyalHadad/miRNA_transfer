@@ -15,7 +15,7 @@ def transform_categorical(data, categorical_features=None):
 
 
 def get_data_from_file(data_file_name, is_pos):
-    col_to_remove = ['Source', 'Organism', 'number of reads', 'mRNA_name', 'full_mrna','microRNA_name', 'miRNA sequence', 'target sequence']
+    col_to_remove = ['Source', 'Organism', 'number of reads', 'mRNA_name', 'full_mrna', 'microRNA_name', 'miRNA sequence', 'target sequence']
     pos_or_neg = 'neg'
     if is_pos == 1:
         pos_or_neg = 'pos'
@@ -26,7 +26,6 @@ def get_data_from_file(data_file_name, is_pos):
     df['label'] = is_pos
     print("Final {0} Data shape:{0}".format(pos_or_neg,df.shape))
     return df
-
 
 
 def create_train_dataset(org_name):

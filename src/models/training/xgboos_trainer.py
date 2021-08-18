@@ -1,46 +1,26 @@
-from datetime import datetime
 import matplotlib.pyplot as plt
-import pandas as pd
 import xgboost as xgb
-import shap
-import numpy as np
 import os
 from constants import *
-from src.models.models_handler import save_metrics
 from time import gmtime, strftime
-from sklearn.model_selection import train_test_split
-from sklearn import metrics
+from src.models.model_learner import ModelLearner
 
-class XgboostTrainObj:
-    x = None
-    xval = None
-    y = None
-    yval = None
-    model = None
-    org_name=None
+class XgboostTrainObj(ModelLearner):
 
-
-    def __init__(self,org_name):
-        self.org_name = org_name
+    def __init__(self,org_name,m_name):
+        ModelLearner.__init__(self,org_name,m_name)
 
 
     def train_model(self):
-        train = pd.read_csv(os.path.join(PROCESSED_TRAIN_PATH, "{0}_train.csv".format(self.org_name)),index_col=False)
-        print("---Train data was loaded---\n")
-        print("training data shape:", train.shape)
-        y = train['label']
-        x = train.drop(['label'], axis=1)
-        x = np.asarray(x).astype('float32')
-        self.x, self.xval, self.y, self.yval = train_test_split(x, y, test_size=0.2, random_state=42)
-        print("---Start training---\n")
-        eval_s = [(self.x, self.y), (self.xval, self.yval)]
-        print("---Start training---\n")
-        self.model = xgb.XGBClassifier().fit(self.x, self.y, eval_metric=["error", "logloss"], eval_set=eval_s)
-
+        super().prep_model_training()
+        print("---Start training {0} on {1}---\n".format(self.model_name,self.org_name))
+        self.model = xgb.XGBClassifier().fit(self.x, self.y, eval_metric=["error", "logloss"], eval_set=[(self.x, self.y), (self.xval, self.yval)])
+        print("---Learning Curves---\n")
         self.plot_learning_curves()
         model_name = os.path.join(MODELS_OBJECTS_PATH,
-                                  'xgboost_{0}_{1}.json'.format(self.org_name, strftime("%Y-%m-%d", gmtime())))
+                                  '{0}_{1}_{2}.json'.format(self.model_name,self.org_name, strftime("%Y-%m-%d", gmtime())))
         self.model.save_model(model_name)
+        print("---{0} model saved---\n".format(self.model_name))
 
 
     def plot_learning_curves(self):
@@ -61,32 +41,23 @@ class XgboostTrainObj:
         plt.ylabel('Classification Error')
         plt.title('XGBoost Classification Error')
         plt.savefig(os.path.join(MODELS_OUTPUT_PATH, 'XGBoost {0} Classification Error.png'.format(self.org_name)))
+        plt.clf()
 
-    def explain_model(self):
+
+    def model_explain(self):
         print("---Explain model---\n")
-        explainer = shap.Explainer(self.model)
-        shap_values = explainer(self.x)
-        shap.plots.waterfall(shap_values[0], show=False)
-        plt.savefig(os.path.join(MODELS_OUTPUT_PATH, 'xgboost_{0}_waterfall.png'.format(self.org_name)))
-        shap.summary_plot(shap_values, self.x, plot_type="bar", show=False)
-        plt.savefig(os.path.join(MODELS_OUTPUT_PATH, 'xgboost_{0}_bar.png'.format(self.org_name)))
-        print("---Shap plots were saved---\n")
+        self.feature_importance()
+        super().model_explain()
 
-    def evaluate_model(self):
-        test = pd.read_csv(os.path.join(PROCESSED_TEST_PATH, "{0}_test.csv".format(self.org_name)),index_col=False)
-        y = test['label']
-        x = test.drop(['label'], axis=1)
-        x = np.asarray(x).astype('float32')
-        pred = self.model.predict(x)
-        model_name = 'xgboost_{0}'.format(self.org_name)
-        date_time = datetime.now().strftime("%d_%m_%Y %H_%M_%S")
-        eval_dict = {'Model':model_name, 'Date': date_time, 'ACC': metrics.accuracy_score(y, pred)}
-        eval_dict['FPR'], eval_dict['TPR'], thresholds = metrics.roc_curve(y, pred)
-        eval_dict['AUC'] = metrics.auc(eval_dict['FPR'], eval_dict['TPR'])
-        eval_dict['MCC'] = metrics.matthews_corrcoef(y, pred)
-        eval_dict['F1_score'] = metrics.f1_score(y, pred)
-        save_metrics(eval_dict)
-        pred_res = pd.DataFrame(zip(pred, y), columns=['pred', 'y'])
-        pred_res.to_csv(os.path.join(MODELS_PREDICTION_PATH, "pred_{0}_{1}.csv".format(model_name,date_time)),index=False)
 
-    #Eyal
+    def feature_importance(self):
+        print("feature_importances\n")
+        importance = self.model.feature_importances_
+        f_important = sorted(list(zip(self.feature_names, importance)), key=lambda x: x[1], reverse=True)
+        plt.bar([x[0] for x in f_important[:5]], [x[1] for x in f_important[:5]])
+        plt.xticks(rotation=20)
+        title = '{0} {1} f_important'.format(self.model_name, self.org_name)
+        plt.title(title)
+        plt.savefig(os.path.join(MODELS_FEATURE_IMPORTANCE, '{0}.png'.format(title)))
+        plt.clf()
+

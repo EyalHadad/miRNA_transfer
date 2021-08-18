@@ -11,5 +11,6 @@ PROCESSED_TEST_PATH = "data/processed/test"
 MODELS_PATH = "models"
 MODELS_OBJECTS_PATH = "models/objects"
 MODELS_OUTPUT_PATH = "models/learning_output"
+MODELS_FEATURE_IMPORTANCE = "models/feature_importance"
 MODELS_PREDICTION_PATH = "models/prediction"
 

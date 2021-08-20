@@ -4,6 +4,8 @@ import os
 from constants import *
 from time import gmtime, strftime
 from src.models.model_learner import ModelLearner
+from src.models.models_handler import save_feature_importance_res
+
 
 class XgboostTrainObj(ModelLearner):
 
@@ -54,6 +56,8 @@ class XgboostTrainObj(ModelLearner):
         print("feature_importances\n")
         importance = self.model.feature_importances_
         f_important = sorted(list(zip(self.feature_names, importance)), key=lambda x: x[1], reverse=True)
+        save_feature_importance_res('{0}_{1}'.format(self.model_name,self.org_name),f_important,'reg')
+
         plt.bar([x[0] for x in f_important[:5]], [x[1] for x in f_important[:5]])
         plt.xticks(rotation=20)
         title = '{0} {1} f_important'.format(self.model_name, self.org_name)

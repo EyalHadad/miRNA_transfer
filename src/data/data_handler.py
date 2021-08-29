@@ -15,7 +15,7 @@ def transform_categorical(data, categorical_features=None):
 
 
 def get_data_from_file(data_file_name, is_pos):
-    col_to_remove = ['Source', 'Organism', 'number of reads', 'mRNA_name', 'full_mrna', 'microRNA_name', 'miRNA sequence', 'target sequence']
+    col_to_remove = ['Source', 'Organism', 'number of reads', 'full_mrna']
     pos_or_neg = 'neg'
     if is_pos == 1:
         pos_or_neg = 'pos'

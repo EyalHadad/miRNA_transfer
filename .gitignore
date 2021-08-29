@@ -10,3 +10,4 @@
 *.pkl
 *.ipynb*
 *.vscode*
+models/objects/*

@@ -1,6 +1,5 @@
 from sklearn.inspection import permutation_importance
 from datetime import datetime
-from sklearn import metrics
 import matplotlib.pyplot as plt
 import pandas as pd
 import shap
@@ -8,7 +7,7 @@ import numpy as np
 from constants import *
 from sklearn.model_selection import train_test_split
 import os
-from src.models.models_handler import save_metrics,create_sequence
+from src.models.models_handler import save_metrics,create_sequence,create_evaluation_dict
 
 class ModelLearner:
     x = None
@@ -46,7 +45,7 @@ class ModelLearner:
         self.x = self.x.drop('sequence', axis=1)
         self.sequences_tst = np.array(self.xval['sequence'].values.tolist())
         self.xval =self.xval.drop('sequence', axis=1)
-        self.x = self.x.astype("float")
+        self.x = self.x.astype("int")
         self.xval = self.xval.astype("float")
 
 
@@ -105,35 +104,21 @@ class ModelLearner:
 
     def evaluate_model(self):
         test = pd.read_csv(os.path.join(PROCESSED_TEST_PATH, "{0}_test.csv".format(self.org_name)), index_col=False)
+        print("---Test data was loaded---\n")
         test['sequence'] = test.apply(lambda x: create_sequence(x['miRNA sequence'], x['target sequence']), axis=1)
         y = test['label']
-        x = test.drop(['mRNA_start', 'label', 'mRNA_name', 'target sequence', 'microRNA_name', 'miRNA sequence'],
-                       axis=1)
+        X = test.drop(['mRNA_start', 'label', 'mRNA_name', 'target sequence', 'microRNA_name', 'miRNA sequence'],axis=1)
+        X.drop('sequence', 1).fillna(0, inplace=True)
 
-        sequences_to_pred = np.array(x['sequence'].values.tolist())
-        x.drop('sequence', 1).fillna(0, inplace=True)
-        x.drop('sequence', axis=1, inplace=True)
-        x = x.astype("float")
+        sequences_to_pred = np.array(X['sequence'].values.tolist())
+        X.drop('sequence', axis=1, inplace=True)
+        x = X.astype("float")
 
         pred = self.model.predict([x,sequences_to_pred])
 
-
-
-        # pred = self.model.predict(x)
-
-        date_time, model_name = self.create_evaluation_dict(pred, y)
+        date_time, model_name = create_evaluation_dict(self.model_name, self.org_name,pred, y)
         pred_res = pd.DataFrame(zip(pred, y), columns=['pred', 'y'])
         pred_res.to_csv(os.path.join(MODELS_PREDICTION_PATH, "pred_{0}_{1}.csv".format(model_name, date_time)),
                         index=False)
 
 
-    def create_evaluation_dict(self, pred, y):
-        model_name = '{0}_{1}'.format(self.model_name, self.org_name)
-        date_time = datetime.now().strftime("%d_%m_%Y %H_%M_%S")
-        eval_dict = {'Model': model_name, 'Date': date_time, 'ACC': metrics.accuracy_score(y, np.round(pred))}
-        eval_dict['FPR'], eval_dict['TPR'], thresholds = metrics.roc_curve(y, pred)
-        eval_dict['AUC'] = metrics.auc(eval_dict['FPR'], eval_dict['TPR'])
-        eval_dict['MCC'] = metrics.matthews_corrcoef(y, np.round(pred))
-        eval_dict['F1_score'] = metrics.f1_score(y, np.round(pred))
-        save_metrics(eval_dict)
-        return date_time, model_name

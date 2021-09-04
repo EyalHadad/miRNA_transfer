@@ -92,46 +92,55 @@ def miTrans_base_model(my_shape):
 class miTransfer(Model):
     def __init__(self, input_shape, vocab_size=5, maxlen=130, embed_dim=100):
         super(miTransfer, self).__init__()
-
+        # CNN configuration
         self.cnn_input = Input(shape=(maxlen,))
         self.cnn_embeddings = Embedding(vocab_size, embed_dim)
         self.cnn_conv1 = Conv1D(filters=32, kernel_size=8, activation='relu')
         self.cnn_maxpool = MaxPooling1D(pool_size=2)
         self.cnn_flatten = Flatten()
         self.cnn_dense = Dense(10, activation='relu')
+        self.cnn_output = Dense(1, activation='sigmoid')
+        # ANN configuration
+        self.ann_input = Input(shape=(input_shape,))
+        self.ann_dropout = Dropout(rate=0.5)
+        self.ann_dense1 = Dense(input_shape, activation='relu')
+        self.ann_dense2 = Dense(input_shape / 2, activation='relu', kernel_constraint=maxnorm(3),
+                                activity_regularizer=l1(0.001),kernel_regularizer=l1(0.001))
+        self.ann_dense3 = Dense(input_shape / 4, activation='relu', kernel_constraint=maxnorm(3),
+                                activity_regularizer=l1(0.001), kernel_regularizer=l1(0.001))
+        self.ann_dense4 = Dense(input_shape / 8, activation='relu', kernel_constraint=maxnorm(3),
+                                activity_regularizer=l1(0.001), kernel_regularizer=l1(0.001))
+        self.ann_output = Dense(1, activation='sigmoid')
 
-        y = MaxPooling1D(pool_size=2)(y)
-        y = Flatten()(y)
-        y = Dense(10, activation='relu')(y)
-        y = Dense(1, activation='sigmoid')(y)
+        # Merge configuration
+        self.combined_layer = Dense(2, activation="relu")
+        self.final_output = Dense(1, activation='sigmoid')
 
-        inputs = Input(shape=(130,))
-        y = Embedding(5, 100)(inputs)
-        y = Conv1D(filters=32, kernel_size=8, activation='relu')(y)
-        y = MaxPooling1D(pool_size=2)(y)
-        y = Flatten()(y)
-        y = Dense(10, activation='relu')(y)
-        y = Dense(1, activation='sigmoid')(y)
-        y = Model(inputs, y)
-    #     ann_branch = self.build_ann_branch(input_shape)
-    # cnn_branch = build_cnn_branch()
-
-    # super(NERModel, self).__init__()
-    # self.embedding_layer = TokenAndPositionEmbedding(maxlen, vocab_size, embed_dim)
-    # self.transformer_block = TransformerBlock(embed_dim, num_heads, ff_dim)
-    # self.dropout1 = layers.Dropout(0.1)
-    # self.ff = layers.Dense(ff_dim, activation="relu")
-    # self.dropout2 = layers.Dropout(0.1)
-    # self.ff_final = layers.Dense(num_tags, activation="softmax")
 
     def call(self, inputs, training=False):
-        x = self.embedding_layer(inputs)
-        x = self.transformer_block(x)
-        x = self.dropout1(x, training=training)
-        x = self.ff(x)
-        x = self.dropout2(x, training=training)
-        x = self.ff_final(x)
-        return x
+
+        y= self.ann_input(inputs[0])
+        y= self.ann_dense1(y)
+        y= self.ann_dense2(y)
+        y= self.ann_dropout(y)
+        y= self.ann_dense3(y)
+        y= self.ann_dropout(y)
+        y= self.ann_dense4(y)
+        y= self.ann_output(y)
+
+        x = self.cnn_input(inputs[1])
+        x = self.cnn_embeddings(x)
+        x = self.cnn_conv1(x)
+        x = self.cnn_maxpool(x)
+        x = self.cnn_flatten(x)
+        x = self.cnn_dense(x)
+        x = self.cnn_output(x)
+
+        z = self.combined_layer([x,y])
+        z = self.final_output(z)
+
+        return z
+
 
     def build_ann_branch(my_shape):
         inputs = Input(shape=(my_shape,))
@@ -174,3 +183,41 @@ def build_ann_branch(my_shape):
     x = Dense(1, activation='sigmoid')(x)
     x = Model(inputs, x)
     return x
+
+class miSmallTransfer(Model):
+    def __init__(self, input_shape, vocab_size=5, maxlen=130, embed_dim=100):
+        super(miSmallTransfer, self).__init__()
+        # CNN configuration
+        self.cnn_input = Input(shape=(maxlen,))
+        self.cnn_embeddings = Embedding(vocab_size, embed_dim)
+        self.cnn_conv1 = Conv1D(filters=32, kernel_size=8, activation='relu')
+        self.cnn_maxpool = MaxPooling1D(pool_size=2)
+        self.cnn_flatten = Flatten()
+        self.cnn_dense = Dense(10, activation='relu')
+        self.cnn_output = Dense(1, activation='sigmoid')
+        # ANN configuration
+        self.ann_input = Input(shape=(input_shape,))
+        self.ann_dense1 = Dense(input_shape, activation='relu')
+        self.ann_output = Dense(1, activation='sigmoid')
+
+        # Merge configuration
+        self.concatenate_layer = Dense(2, activation="relu")
+        self.combined_layer = Dense(2, activation="relu")
+        self.final_output = Dense(1, activation='sigmoid')
+
+
+    def call(self, inputs, training=False):
+
+        # y= self.ann_input(inputs[0])
+        y= self.ann_dense1(inputs[0])
+        y= self.ann_output(y)
+
+        # x = self.cnn_input(inputs[1])
+        x = self.cnn_embeddings(inputs[1])
+        x = self.cnn_dense(x)
+        x = self.cnn_output(x)
+        x = layers.concatenate([x,y])
+        z = self.combined_layer(x)
+        z = self.final_output(z)
+
+        return z

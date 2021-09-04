@@ -3,12 +3,12 @@ import os
 from constants import *
 from time import gmtime, strftime
 from src.models.model_learner import ModelLearner
-from src.models.vanilla_models_configurations import base_learning,cnn_learning2,rnn_learning, miTrans_base_model
+from src.models.miRNA_transfer_subclass import miTransfer
 import numpy as np
 import pandas as pd
 import logging
 logging.getLogger("tensorflow").setLevel(logging.CRITICAL)
-
+import tensorflow as tf
 from tensorflow.python.keras.models import save_model
 
 
@@ -21,20 +21,17 @@ class BaseTrainObj(ModelLearner):
     def train_model(self):
         super().prep_model_training()
         print("---Start training {0} on {1}---\n".format(self.model_name, self.org_name))
+        print(f"ann input {self.x.shape}, cnn input {self.sequences.shape}")
+        self.model = miTransfer()
+        self.model.compile(optimizer='adam', loss='binary_crossentropy',metrics=['acc'])
+        self.history = self.model.fit([self.x,self.sequences], self.y, epochs=2,validation_data=([self.xval,self.sequences_tst], self.yval))
 
-        self.model = miTrans_base_model(self.x.shape[1])
-        self.history = self.model.fit([self.x, self.sequences], self.y, epochs=5,
-                                      validation_data=([self.xval, self.sequences_tst], self.yval))
-
-        # self.model = cnn_learning2()
-        # self.model = rnn_learning()
-        # self.history = self.model.fit(self.sequences, self.y, batch_size=256, epochs=5, verbose=2, validation_data=(self.sequences_tst, self.yval))
-
+        print(self.model.summary())
         print("---Learning Curves---\n")
         self.plot_learning_curves()
-        model_name = os.path.join(MODELS_OBJECTS_PATH,
-                                  '{0}_{1}_{2}'.format(self.model_name, self.org_name, strftime("%Y-%m-%d", gmtime())))
-        save_model(self.model, model_name)
+        model_name = os.path.join(MODELS_OBJECTS_PATH,self.org_name)
+        print("---Saving model---\n")
+        # save_model(self.model, model_name)
         print("---{0} model saved---\n".format(self.model_name))
 
     def plot_learning_curves(self):

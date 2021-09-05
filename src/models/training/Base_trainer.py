@@ -1,5 +1,6 @@
 import matplotlib.pyplot as plt
 import os
+from keras.optimizers import SGD
 from constants import *
 from time import gmtime, strftime
 from src.models.model_learner import ModelLearner
@@ -9,7 +10,7 @@ import pandas as pd
 import logging
 logging.getLogger("tensorflow").setLevel(logging.CRITICAL)
 import tensorflow as tf
-from tensorflow.python.keras.models import save_model
+from tensorflow.python.keras.models import save_model,load_model
 
 
 class BaseTrainObj(ModelLearner):
@@ -23,15 +24,15 @@ class BaseTrainObj(ModelLearner):
         print("---Start training {0} on {1}---\n".format(self.model_name, self.org_name))
         print(f"ann input {self.x.shape}, cnn input {self.sequences.shape}")
         self.model = miTransfer()
-        self.model.compile(optimizer='adam', loss='binary_crossentropy',metrics=['acc'])
+        self.model.compile(optimizer=SGD(lr=0.01, momentum=0.9, clipnorm=1.0), loss='binary_crossentropy',metrics=['acc'])
         self.history = self.model.fit([self.x,self.sequences], self.y, epochs=2,validation_data=([self.xval,self.sequences_tst], self.yval))
 
         print(self.model.summary())
         print("---Learning Curves---\n")
         self.plot_learning_curves()
-        model_name = os.path.join(MODELS_OBJECTS_PATH,self.org_name)
+        model_name = os.path.join(MODELS_OBJECTS_PATH,f"{self.org_name}/")
         print("---Saving model---\n")
-        # save_model(self.model, model_name)
+        self.model.save_weights(model_name)
         print("---{0} model saved---\n".format(self.model_name))
 
     def plot_learning_curves(self):

@@ -5,6 +5,7 @@ from keras.layers import Dense, Dropout, Conv1D, Embedding, MaxPooling1D, Flatte
 from keras.models import Sequential
 from keras import layers, Model
 import numpy as np
+from tensorflow.python.keras.models import load_model
 
 
 
@@ -103,27 +104,18 @@ class miTransfer(Model):
     #
 
 
-# model = CNN_Branch()
-# model = RNN_Branch()
-
-# model = ANN_Branch().model()
 model = miTransfer()
 
-model.compile(optimizer='adam', loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True),
-                      metrics=['accuracy'])
+model.compile(optimizer='adam', loss='binary_crossentropy',metrics=['accuracy'])
 
-# input_data = tf.random.normal((1504, 587))
 input_data = np.random.random([1504, 587]) * 5
 input_data = input_data.astype('int')
-print(input_data.shape)
-# input_data = np.array([[1, 2, 3], [1, 1, 1], [1, 1, 1]])
-# print(input_data.shape)
-pred = model.predict([input_data,input_data])
-# pred = model.predict(input_data)
-print(model.summary())
-print(input_data.shape)
-print(pred.shape)
-
-model.save('delete_model')
+y=np.random.randint(2, size=1504)
+hist = model.fit([input_data,input_data],y,epochs=1)
+model.save_weights('delete_model/')
+l_model = miTransfer()
+l_model.load_weights('delete_model/')
+l_model.compile(optimizer='adam', loss='binary_crossentropy',metrics=['accuracy'])
+pred = l_model.predict([input_data,input_data])
 
 i=0

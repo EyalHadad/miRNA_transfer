@@ -39,7 +39,7 @@ def cat_or_pad(x, length):
 
 
 def create_sequence(miRNA, mRNA):
-    my_map = {'A': 0, 'C': 1,'G': 2, 'T': 3,'N': 4}
+    my_map = {'A': 0, 'C': 1,'G': 2, 'U': 3,'T': 3,'N': 4}
     miRNA = cat_or_pad(list(miRNA),30)
     mRNA = cat_or_pad(list(mRNA),100)
     total_res = [my_map[x] for x in miRNA+mRNA]
@@ -49,6 +49,9 @@ def create_sequence(miRNA, mRNA):
 def create_evaluation_dict(t_model_name, org_name, pred, y):
     model_name = '{0}_{1}'.format(t_model_name, org_name)
     date_time = datetime.now().strftime("%d_%m_%Y %H_%M_%S")
+    print(f" There are {np.sum(np.isnan(pred))} nan predictions")
+    np.nan_to_num(pred,copy=False)
+    print(f" After filling 0 instead of nan there are {np.sum(np.isnan(pred))} nan predictions")
     eval_dict = {'Model': model_name, 'Date': date_time, 'ACC': metrics.accuracy_score(y, np.round(pred))}
     eval_dict['FPR'], eval_dict['TPR'], thresholds = metrics.roc_curve(y, pred)
     eval_dict['AUC'] = metrics.auc(eval_dict['FPR'], eval_dict['TPR'])

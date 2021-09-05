@@ -7,7 +7,8 @@ if __name__ == '__main__':
     dataset_list = ['worm1']
     rest = DATASETS
     rest.remove('worm1')
-    transfer_size = [0,100,200,500,1000]
+    rest = ['mouse1', 'mouse2']
+    transfer_size = [0,100,200,500,800]
     for org_name in dataset_list:
         trans_obj = Transfer_obj(org_name)
         for dst_org_name in rest:

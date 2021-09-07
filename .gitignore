@@ -1,6 +1,7 @@
 .idea
 *.pyc
 *.csv
+*.txt
 *.png
 *.h5
 *.nfs*

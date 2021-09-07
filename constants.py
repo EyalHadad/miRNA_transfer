@@ -14,4 +14,4 @@ MODELS_OUTPUT_PATH = "models/learning_output"
 MODELS_FEATURE_IMPORTANCE = "reports/feature_importance"
 MODELS_PREDICTION_PATH = "models/prediction"
 
-DATASETS = ['cow', 'human1', 'human2', 'human3', 'worm1', 'worm2', 'mouse1', 'mouse2']
+DATASETS = ['cow1', 'human1', 'human2', 'human3', 'worm1', 'worm2', 'mouse1', 'mouse2']

@@ -2,8 +2,8 @@ from src.models.transfer.Transfer_obj import Transfer_obj
 from constants import *
 
 if __name__ == '__main__':
-    # dataset_list = DATASETS
-    dataset_list = ['worm1']
+    dataset_list = DATASETS
+    # dataset_list = ['worm1']
     transfer_size = [0, 100, 200, 500, 800]
     for org_name in dataset_list:
         rest = DATASETS

@@ -2,10 +2,11 @@ from src.models.training.xgboos_trainer import XgboostTrainObj
 from src.models.training.GaussianNB_trainer import NbTrainObj
 from src.models.training.RF_trainer import RfTrainObj
 from src.models.training.Base_trainer import BaseTrainObj
+from src.data.data_handler import *
 
 if __name__ == '__main__':
-    # dataset_list = ['cow', 'human1', 'human2', 'human3', 'worm1', 'worm2', 'mouse1', 'mouse2']
-    dataset_list = ['worm1']
+    dataset_list = DATASETS
+    # dataset_list = ['worm1']
     for model_type in [4]:
         for data in dataset_list:
             if model_type == 1:

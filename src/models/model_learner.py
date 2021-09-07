@@ -45,7 +45,9 @@ class ModelLearner:
         self.x = self.x.drop('sequence', axis=1)
         self.sequences_tst = np.array(self.xval['sequence'].values.tolist())
         self.xval =self.xval.drop('sequence', axis=1)
-        self.x = self.x.astype("int")
+        self.x.fillna(0, inplace=True)
+        self.x = self.x.astype("float")
+        self.xval.fillna(0, inplace=True)
         self.xval = self.xval.astype("float")
 
 

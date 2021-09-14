@@ -27,7 +27,7 @@ class BaseTrainObj(ModelLearner):
         self.model.compile(optimizer=SGD(lr=0.01, momentum=0.9, clipnorm=1.0), loss='binary_crossentropy',metrics=['acc'])
         self.history = self.model.fit([self.x,self.sequences], self.y, epochs=2,validation_data=([self.xval,self.sequences_tst], self.yval))
 
-        print(self.model.summary())
+        # print(self.model.summary())
         print("---Learning Curves---\n")
         self.plot_learning_curves()
         model_name = os.path.join(MODELS_OBJECTS_PATH,f"{self.org_name}/")

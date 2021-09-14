@@ -89,10 +89,10 @@ class miTransfer(Model):
 
     def call(self, inputs, **kwargs):
         ann_output= self.ann_block(inputs[0])
-        cnn_output = self.cnn_block(inputs[1])
-        rnn_output = self.rnn_block(inputs[1])
-        combined_input = concatenate([ann_output, cnn_output,rnn_output])
-        x = self.combined_layer(combined_input)
+        # cnn_output = self.cnn_block(inputs[1])
+        # rnn_output = self.rnn_block(inputs[1])
+        # combined_input = concatenate([ann_output, cnn_output,rnn_output])
+        x = self.combined_layer(ann_output)
         return self.final_output(x)
 
 

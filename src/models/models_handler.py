@@ -1,3 +1,4 @@
+import pandas as pd
 import csv
 import os
 from constants import *
@@ -6,7 +7,8 @@ import numpy as np
 from sklearn.preprocessing import LabelBinarizer
 from datetime import datetime
 from sklearn import metrics
-
+from datetime import datetime
+import matplotlib.pyplot as plt
 
 def save_feature_importance_res(row_desc, f_importance_list,type_name):
     f_path = os.path.join(MODELS_FEATURE_IMPORTANCE, 'models_feature_importance_{0}.csv'.format(type_name))
@@ -58,4 +60,27 @@ def create_evaluation_dict(t_model_name, org_name, pred, y):
     eval_dict['MCC'] = metrics.matthews_corrcoef(y, np.round(pred))
     eval_dict['F1_score'] = metrics.f1_score(y, np.round(pred))
     save_metrics(eval_dict)
-    return date_time, model_name
+    return eval_dict['AUC']
+
+
+def create_res_table(tabel_dict):
+    print("--- Saving tabel results ---")
+    res = pd.DataFrame(index = tabel_dict.keys(),columns=tabel_dict.keys())
+    for r in tabel_dict.keys():
+        for c in tabel_dict[r].keys():
+            res.at[r, c] = round(tabel_dict[r][c][0],2)
+
+    date_time = datetime.now().strftime("%d_%m_%Y %H_%M_%S")
+    res.to_csv(os.path.join(MODELS_OBJECTS_TABELS, f"{date_time}.csv"))
+
+
+
+def create_res_graph(tabel_dict,org_name,ind,col):
+        res = pd.DataFrame(index = ind,columns=col)
+        for c in tabel_dict.keys():
+            for t in tabel_dict[c].keys():
+                res.at[c,t] = round(tabel_dict[c][t],2)
+        res.T.plot()
+        plt.savefig(os.path.join(MODELS_OBJECTS_GRAPHS, f"{org_name}.png"))
+        plt.clf()
+        res.to_csv(os.path.join(MODELS_OBJECTS_GRAPHS, f"{org_name}.csv"))

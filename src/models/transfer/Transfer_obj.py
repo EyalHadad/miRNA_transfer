@@ -80,19 +80,19 @@ class Transfer_obj:
             self.x_val = self.x_val.drop('sequence', axis=1)
             self.x_val = self.x_val.astype("float")
 
-
-        self.eval_model(t_size)
-
+        auc = self.eval_model(t_size)
+        return auc
 
 
     def eval_model(self,t_size):
         print("Evaluate model")
         print(f" x shape:{self.x_val.shape} and seq sahpe: {self.sequences_tst.shape}")
         pred = self.l_model.predict([self.x_val, self.sequences_tst])
-        date_time, model_name = create_evaluation_dict(self.src_model_name+"_"+str(t_size),self.dst_org_name,pred, self.y_val)
+        auc = create_evaluation_dict(self.src_model_name+"_"+str(t_size),self.dst_org_name,pred, self.y_val)
         pred_res = pd.DataFrame(zip(pred, self.y_val), columns=['pred', 'y'])
         pred_file_name = "pred_{0}_{1}_{2}.csv".format(self.src_model_name, t_size, self.dst_org_name)
         pred_res.to_csv(os.path.join(MODELS_PREDICTION_PATH, pred_file_name), index=False)
+        return auc
 
 
 

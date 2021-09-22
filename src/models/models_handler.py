@@ -4,8 +4,8 @@ import os
 from constants import *
 import pickle
 import numpy as np
-from sklearn.preprocessing import LabelBinarizer
-from datetime import datetime
+import copy
+from statistics import mean
 from sklearn import metrics
 from datetime import datetime
 import matplotlib.pyplot as plt
@@ -84,3 +84,31 @@ def create_res_graph(tabel_dict,org_name,ind,col):
         plt.savefig(os.path.join(MODELS_OBJECTS_GRAPHS, f"{org_name}.png"))
         plt.clf()
         res.to_csv(os.path.join(MODELS_OBJECTS_GRAPHS, f"{org_name}.csv"))
+
+def create_empty_species_dict():
+    di = {}
+    for a in SPECIES:
+        di[a] = dict()
+    for a in SPECIES:
+        rest = copy.deepcopy(SPECIES)
+        rest.remove(a)
+        for r in rest:
+            di[a][r] = {}
+            for s in TRANSFER_SIZE_LIST:
+                di[a][r][s] = []
+    return di
+
+
+def create_species_dict(table_dict):
+    new_dict = create_empty_species_dict()
+    for src_org in table_dict.keys():
+        for dst_org in table_dict.keys():
+            if dst_org[:-1] in new_dict[src_org[:-1]]:
+                for s, val in table_dict[src_org][dst_org].items():
+                    new_dict[src_org[:-1]][dst_org[:-1]][s].append(val)
+    for s_org in new_dict.keys():
+        for d_org in new_dict[s_org].keys():
+            for s,val in new_dict[s_org][d_org].items():
+                org_list = new_dict[s_org][d_org][s]
+                new_dict[s_org][d_org][s] = round(mean(org_list),2)
+    return new_dict

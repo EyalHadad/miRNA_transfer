@@ -35,7 +35,7 @@ class ModelLearner:
         print("training data shape:", train.shape)
         train['sequence'] = train.apply(lambda x: create_sequence(x['miRNA sequence'], x['target sequence']), axis=1)
         y = train['label']
-        X = train.drop(['mRNA_start', 'label','mRNA_name','target sequence','microRNA_name','miRNA sequence'], axis=1)
+        X = train.drop(['mRNA_start', 'label','mRNA_name','target sequence','microRNA_name','miRNA sequence','full_mrna'], axis=1)
         X.drop('sequence', 1).fillna(0,inplace=True)
 
         self.feature_names = list(X.columns)
@@ -109,7 +109,7 @@ class ModelLearner:
         print("---Test data was loaded---\n")
         test['sequence'] = test.apply(lambda x: create_sequence(x['miRNA sequence'], x['target sequence']), axis=1)
         y = test['label']
-        X = test.drop(['mRNA_start', 'label', 'mRNA_name', 'target sequence', 'microRNA_name', 'miRNA sequence'],axis=1)
+        X = test.drop(['mRNA_start', 'label', 'mRNA_name', 'target sequence', 'microRNA_name', 'miRNA sequence', 'full_mrna'],axis=1)
         X.drop('sequence', 1).fillna(0, inplace=True)
 
         sequences_to_pred = np.array(X['sequence'].values.tolist())

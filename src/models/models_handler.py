@@ -60,7 +60,7 @@ def create_evaluation_dict(t_model_name, org_name, pred, y):
     eval_dict['MCC'] = metrics.matthews_corrcoef(y, np.round(pred))
     eval_dict['F1_score'] = metrics.f1_score(y, np.round(pred))
     save_metrics(eval_dict)
-    return eval_dict['AUC']
+    return date_time, eval_dict['AUC']
 
 
 def create_res_table(tabel_dict):

@@ -75,8 +75,8 @@ def create_res_table(tabel_dict):
 
 
 
-def create_res_graph(tabel_dict,org_name,ind,col):
-        res = pd.DataFrame(index = ind,columns=col)
+def create_res_graph(tabel_dict,org_name,col):
+        res = pd.DataFrame(index = tabel_dict.keys(),columns=col)
         for c in tabel_dict.keys():
             for t in tabel_dict[c].keys():
                 res.at[c,t] = round(tabel_dict[c][t],2)

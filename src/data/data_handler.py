@@ -14,23 +14,22 @@ def transform_categorical(data, categorical_features=None):
         return data
 
 
-def stratify_train_test_split (df, test_size , random_state):
-    #Change: all the unique miRNA were put in the test set
-    uniques_mirna = df[df.groupby("microRNA_name").microRNA_name.transform(len)==1]
-    non_uniques_mirna = df[df.groupby("microRNA_name").microRNA_name.transform(len)>1]
+def stratify_train_test_split(df, test_size, random_state):
+    # Change: all the unique miRNA were put in the test set
+    uniques_mirna = df[df.groupby("microRNA_name").microRNA_name.transform(len) == 1]
+    non_uniques_mirna = df[df.groupby("microRNA_name").microRNA_name.transform(len) > 1]
 
-    #dealing with the non_uniques_mirna
+    # dealing with the non_uniques_mirna
     non_uniques_train, non_uniques_test = sk.train_test_split(non_uniques_mirna, test_size=test_size,
-                                                           random_state=random_state,
-                                                           stratify=non_uniques_mirna["microRNA_name"])
+                                                              random_state=random_state,
+                                                              stratify=non_uniques_mirna["microRNA_name"])
 
     train = pd.concat([non_uniques_train])
     test = pd.concat([non_uniques_test, uniques_mirna])
     return train, test
 
 
-
-def get_data_from_file(data_file_name, test_size):
+def get_data_from_file(data_file_name, test_size, remove_hot_paring):
     pos_file_path = os.path.join(EXTERNAL_PATH, "{0}_pos.csv".format(data_file_name))
     pos = pd.read_csv(pos_file_path, index_col=0)
     pos.insert(0, "label", 1)
@@ -38,26 +37,29 @@ def get_data_from_file(data_file_name, test_size):
     neg = pd.read_csv(neg_file_path, index_col=0)
     neg.insert(0, "label", 0)
     col_to_remove = ['Source', 'Organism', 'number of reads']
-    pos.drop(col_to_remove,axis=1,inplace=True)
+    pos.drop(col_to_remove, axis=1, inplace=True)
+    if remove_hot_paring:
+        all_col_except_hot = [f for f in pos.columns if not str(f).startswith("HotPairing")]
+        pos = pos[all_col_except_hot]
     col = [c for c in pos.columns if c in neg.columns]
     pos = pos[col]
     neg = neg[col]
-    random_state = np.random.randint(15,30)
+    random_state = np.random.randint(15, 30)
     pos_train, pos_test = stratify_train_test_split(pos, test_size, random_state)
     neg_train, neg_test = stratify_train_test_split(neg, test_size, random_state)
-    pos_train =pos_train.append(neg_train, ignore_index=True)
+    pos_train = pos_train.append(neg_train, ignore_index=True)
     pos_test = pos_test.append(neg_test, ignore_index=True)
     train = pos_train.reindex(np.random.RandomState(seed=random_state).permutation(pos_train.index))
     test = pos_test.reindex(np.random.RandomState(seed=random_state).permutation(pos_test.index))
-    return train,test
+    return train, test
 
 
-def create_train_dataset(org_name):
+def create_train_dataset(org_name, remove_hot_paring):
     print("\n---Reading miRNA external data---")
-    train, test = get_data_from_file(data_file_name = org_name,test_size=0.2)
+    train, test = get_data_from_file(org_name, 0.2, remove_hot_paring)
     print("Training set shape is {0} and test is {1}\n".format(train.shape, test.shape))
     train.to_csv(os.path.join(PROCESSED_TRAIN_PATH, "{0}_train.csv".format(org_name)), index=False)
     print("---Train dataset was created---\n")
     test.to_csv(os.path.join(PROCESSED_TEST_PATH, "{0}_test.csv".format(org_name)), index=False)
     print("---Test dataset was created---\n")
-    i=8
+    i = 8

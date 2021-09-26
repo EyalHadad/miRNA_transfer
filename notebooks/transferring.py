@@ -20,5 +20,5 @@ if __name__ == '__main__':
     create_res_table(datasets_dict)
     species_dict = create_species_dict(datasets_dict)
     for r in species_dict.keys():
-        create_res_graph(species_dict[r], r, dataset_list, transfer_size)
+        create_res_graph(species_dict[r], r, transfer_size)
 i=9

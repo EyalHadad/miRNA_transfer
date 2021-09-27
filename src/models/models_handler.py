@@ -80,7 +80,7 @@ def create_res_graph(tabel_dict,org_name,col):
         for c in tabel_dict.keys():
             for t in tabel_dict[c].keys():
                 res.at[c,t] = round(tabel_dict[c][t],2)
-        res.T.plot()
+        res.T.plot(title=org_name)
         plt.savefig(os.path.join(MODELS_OBJECTS_GRAPHS, f"{org_name}.png"))
         plt.clf()
         res.to_csv(os.path.join(MODELS_OBJECTS_GRAPHS, f"{org_name}.csv"))

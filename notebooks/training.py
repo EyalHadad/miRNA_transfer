@@ -4,7 +4,8 @@ from src.models.training.RF_trainer import RfTrainObj
 from src.models.training.Base_trainer import BaseTrainObj
 from src.data.data_handler import *
 
-if __name__ == '__main__':
+
+def run_training():
     dataset_list = DATASETS
     # dataset_list = ['worm1']
     for model_type in [4]:
@@ -21,3 +22,7 @@ if __name__ == '__main__':
             train_obj.train_model()
             # train_obj.model_explain()
             train_obj.evaluate_model()
+
+
+if __name__ == '__main__':
+    run_training()

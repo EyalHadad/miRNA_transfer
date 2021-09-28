@@ -29,7 +29,7 @@ def stratify_train_test_split(df, test_size, random_state):
     return train, test
 
 
-def get_data_from_file(data_file_name, test_size, remove_hot_paring):
+def get_data_from_file(data_file_name, test_size, remove_hot_paring,only_most_important):
     pos_file_path = os.path.join(EXTERNAL_PATH, "{0}_pos.csv".format(data_file_name))
     pos = pd.read_csv(pos_file_path, index_col=0)
     pos.insert(0, "label", 1)
@@ -38,7 +38,9 @@ def get_data_from_file(data_file_name, test_size, remove_hot_paring):
     neg.insert(0, "label", 0)
     col_to_remove = ['Source', 'Organism', 'number of reads']
     pos.drop(col_to_remove, axis=1, inplace=True)
-    if remove_hot_paring:
+    if only_most_important:
+        pos = pos[IMPORTANT_FEATURES]
+    elif remove_hot_paring:
         all_col_except_hot = [f for f in pos.columns if not str(f).startswith("HotPairing")]
         pos = pos[all_col_except_hot]
     col = [c for c in pos.columns if c in neg.columns]
@@ -54,9 +56,9 @@ def get_data_from_file(data_file_name, test_size, remove_hot_paring):
     return train, test
 
 
-def create_train_dataset(org_name, remove_hot_paring):
+def create_train_dataset(org_name, remove_hot_paring,only_most_important):
     print("\n---Reading miRNA external data---")
-    train, test = get_data_from_file(org_name, 0.2, remove_hot_paring)
+    train, test = get_data_from_file(org_name, 0.2, remove_hot_paring,only_most_important)
     print("Training set shape is {0} and test is {1}\n".format(train.shape, test.shape))
     train.to_csv(os.path.join(PROCESSED_TRAIN_PATH, "{0}_train.csv".format(org_name)), index=False)
     print("---Train dataset was created---\n")

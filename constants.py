@@ -23,6 +23,9 @@ SPECIES = ['worm', 'cow', 'human', 'mouse']
 IMPORTANT_FEATURES = ['miRNAPairingCount_Seed_GU', 'miRNAMatchPosition_1','miRNAPairingCount_Total_GU',
 'Energy_MEF_local_target', 'MRNA_Target_G_comp', 'MRNA_Target_GG_comp', 'miRNAMatchPosition_4',
 'miRNAMatchPosition_5','miRNAPairingCount_Seed_bulge_nt','miRNAPairingCount_Seed_GC',
-'miRNAMatchPosition_2','miRNAPairingCount_Seed_mismatch','miRNAPairingCount_X3p_GC','Seed_match_compact_interactions_all']
+'miRNAMatchPosition_2','miRNAPairingCount_Seed_mismatch','miRNAPairingCount_X3p_GC',
+                      'Seed_match_compact_interactions_all']
+SEQUANCE_FEATURES = ['mRNA_start', 'label', 'mRNA_name',
+                      'target sequence', 'microRNA_name', 'miRNA sequence', 'full_mrna']
 
 # ,'Accessibility (nt=21, len=10)',

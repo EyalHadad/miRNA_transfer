@@ -46,9 +46,8 @@ def get_data_from_file(data_file_name, test_size, remove_hot_paring,only_most_im
     neg.insert(0, "label", 0)
     col_to_remove = ['Source', 'Organism', 'number of reads']
     pos.drop(col_to_remove, axis=1, inplace=True)
-    if only_most_important:
-        pos = pos[IMPORTANT_FEATURES]
-    elif remove_hot_paring:
+
+    if remove_hot_paring:
         all_col_except_hot = [f for f in pos.columns if not str(f).startswith("HotPairing")]
         pos = pos[all_col_except_hot]
     col = [c for c in pos.columns if c in neg.columns]
@@ -65,6 +64,9 @@ def get_data_from_file(data_file_name, test_size, remove_hot_paring,only_most_im
     pos_test = pos_test.append(neg_test, ignore_index=True)
     train = pos_train.reindex(np.random.RandomState(seed=random_state).permutation(pos_train.index))
     test = pos_test.reindex(np.random.RandomState(seed=random_state).permutation(pos_test.index))
+    if only_most_important:
+        train = train[IMPORTANT_FEATURES+SEQUANCE_FEATURES]
+        test = test[IMPORTANT_FEATURES+SEQUANCE_FEATURES]
     return train, test
 
 

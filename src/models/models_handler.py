@@ -60,13 +60,14 @@ def create_evaluation_dict(t_model_name, org_name, pred, y):
     eval_dict['MCC'] = metrics.matthews_corrcoef(y, np.round(pred))
     eval_dict['F1_score'] = metrics.f1_score(y, np.round(pred))
     save_metrics(eval_dict)
-    return date_time, eval_dict['AUC']
+    return date_time, org_name, eval_dict['AUC']
 
 
-def create_res_table(tabel_dict):
+def create_res_table(tabel_dict,in_res_dict):
     print("--- Saving tabel results ---")
     res = pd.DataFrame(index = tabel_dict.keys(),columns=tabel_dict.keys())
     for r in tabel_dict.keys():
+        res.at[r, r] = round(in_res_dict[r],2)
         for c in tabel_dict[r].keys():
             res.at[r, c] = round(tabel_dict[r][c][0],2)
 

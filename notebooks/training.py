@@ -6,6 +6,7 @@ from src.data.data_handler import *
 
 
 def run_training():
+    intra_dataset_res_dict = {}
     dataset_list = DATASETS
     # dataset_list = ['worm1']
     for model_type in [4]:
@@ -21,7 +22,9 @@ def run_training():
 
             train_obj.train_model()
             # train_obj.model_explain()
-            train_obj.evaluate_model()
+            model_name,auc = train_obj.evaluate_model()
+            intra_dataset_res_dict[model_name] = auc
+    return intra_dataset_res_dict
 
 
 if __name__ == '__main__':

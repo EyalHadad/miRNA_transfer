@@ -118,9 +118,9 @@ class ModelLearner:
 
         pred = self.model.predict([x,sequences_to_pred])
 
-        date_time, model_name = create_evaluation_dict(self.model_name, self.org_name,pred, y)
+        date_time, model_name,auc = create_evaluation_dict(self.model_name, self.org_name,pred, y)
         pred_res = pd.DataFrame(zip(pred, y), columns=['pred', 'y'])
         pred_res.to_csv(os.path.join(MODELS_PREDICTION_PATH, "pred_{0}_{1}.csv".format(model_name, date_time)),
                         index=False)
-
+        return model_name,auc
 

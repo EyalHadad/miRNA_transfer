@@ -84,7 +84,7 @@ class Transfer_obj:
         # TODO change second input to sequences - cuz they are not the same shape right now
         # print(f" x shape:{self.x_test.shape} and seq sahpe: {self.sequences_tst.shape}")
         pred = self.l_model.predict([self.x_test, self.x_test])
-        auc = create_evaluation_dict(self.src_model_name + "_" + str(t_size), self.dst_org_name, pred, self.y_test)
+        date_time, org_name, auc = create_evaluation_dict(self.src_model_name + "_" + str(t_size), self.dst_org_name, pred, self.y_test)
         pred_res = pd.DataFrame(zip(pred, self.y_test), columns=['pred', 'y'])
         pred_file_name = "pred_{0}_{1}_{2}.csv".format(self.src_model_name, t_size, self.dst_org_name)
         pred_res.to_csv(os.path.join(MODELS_PREDICTION_PATH, pred_file_name), index=False)

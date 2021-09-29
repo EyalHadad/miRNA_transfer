@@ -4,5 +4,5 @@ from notebooks.transferring import run_transfer
 
 if __name__ == '__main__':
     run_preprocessing()
-    run_training()
-    run_transfer()
+    in_res_dict = run_training()
+    run_transfer(in_res_dict)

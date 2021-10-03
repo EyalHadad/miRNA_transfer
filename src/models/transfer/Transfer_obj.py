@@ -56,13 +56,15 @@ class Transfer_obj:
         self.y_test = test['label']
         self.sequences = np.array(train['sequence'].values.tolist())
         self.sequences_tst = np.array(test['sequence'].values.tolist())
-        X = train.drop(['mRNA_start', 'label', 'mRNA_name', 'target sequence', 'microRNA_name', 'miRNA sequence','full_mrna'],
-                       axis=1)
+        X = train.drop(
+            ['mRNA_start', 'label', 'mRNA_name', 'target sequence', 'microRNA_name', 'miRNA sequence', 'full_mrna'],
+            axis=1)
         self.feature_names = list(X.columns)
         self.x = X.drop('sequence', 1).fillna(0)
         self.x = self.x.astype("float")
-        X_test = test.drop(['mRNA_start', 'label', 'mRNA_name', 'target sequence', 'microRNA_name', 'miRNA sequence','full_mrna'],
-                           axis=1)
+        X_test = test.drop(
+            ['mRNA_start', 'label', 'mRNA_name', 'target sequence', 'microRNA_name', 'miRNA sequence', 'full_mrna'],
+            axis=1)
         self.x_test = X_test.drop('sequence', 1).fillna(0)
         self.x_test = self.x_test.astype("float")
 
@@ -71,10 +73,14 @@ class Transfer_obj:
         load_weights_path = os.path.join(MODELS_OBJECTS_PATH, f"{self.src_model_name}/")
         self.l_model.load_weights(load_weights_path)
         if t_size != 0:
-            x_train_t, x_test_t, y_train_t, y_test_t = train_test_split(self.x, self.y, train_size=t_size,
-                                                                        random_state=42)
+            try:
+                x_train_t, x_test_t, y_train_t, y_test_t = train_test_split(self.x, self.y, train_size=t_size,
+                                                                            random_state=42)
+            except:
+                return 0
+
             # TODO change second input to sequences - cuz they are not the same shape right now
-            self.l_model.fit([x_train_t, x_train_t], y_train_t, epochs=5)
+            self.l_model.fit([x_train_t, x_train_t], y_train_t, epochs=2)
 
         auc = self.eval_model(t_size)
         return auc
@@ -84,7 +90,8 @@ class Transfer_obj:
         # TODO change second input to sequences - cuz they are not the same shape right now
         # print(f" x shape:{self.x_test.shape} and seq sahpe: {self.sequences_tst.shape}")
         pred = self.l_model.predict([self.x_test, self.x_test])
-        date_time, org_name, auc = create_evaluation_dict(self.src_model_name + "_" + str(t_size), self.dst_org_name, pred, self.y_test)
+        date_time, org_name, auc = create_evaluation_dict(self.src_model_name + "_" + str(t_size), self.dst_org_name,
+                                                          pred, self.y_test)
         pred_res = pd.DataFrame(zip(pred, self.y_test), columns=['pred', 'y'])
         pred_file_name = "pred_{0}_{1}_{2}.csv".format(self.src_model_name, t_size, self.dst_org_name)
         pred_res.to_csv(os.path.join(MODELS_PREDICTION_PATH, pred_file_name), index=False)

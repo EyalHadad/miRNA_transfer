@@ -11,7 +11,7 @@ import logging
 logging.getLogger("tensorflow").setLevel(logging.CRITICAL)
 import tensorflow as tf
 from tensorflow.python.keras.models import save_model,load_model
-
+from keras.layers import Input
 
 class BaseTrainObj(ModelLearner):
     history = None
@@ -23,9 +23,13 @@ class BaseTrainObj(ModelLearner):
         super().prep_model_training()
         print("---Start training {0} on {1}---\n".format(self.model_name, self.org_name))
         print(f"ann input {self.x.shape}, cnn input {self.sequences.shape}")
-        self.model = miTransfer()
+        # self.model = miTransfer()
+        model_ = miTransfer()
+        inputs = Input(shape=(self.x.shape[-1],))
+        outputs = model_(inputs)
+        self.model = tf.keras.Model(inputs=inputs, outputs=outputs)
         self.model.compile(optimizer=SGD(lr=0.01, momentum=0.9, clipnorm=1.0), loss='binary_crossentropy',metrics=['acc'])
-        self.history = self.model.fit([self.x,self.sequences], self.y, epochs=2,validation_data=([self.xval,self.sequences_tst], self.yval))
+        self.history = self.model.fit(self.x, self.y, epochs=2,validation_data=(self.xval, self.yval))
 
         # print(self.model.summary())
         print("---Learning Curves---\n")
@@ -58,16 +62,5 @@ class BaseTrainObj(ModelLearner):
 
     def model_explain(self):
         print("---Explain model---\n")
-        self.feature_importance()
         super().model_explain()
 
-    def feature_importance(self):
-        print("feature_importances\n")
-        importance = self.model.feature_importances_
-        f_important = sorted(list(zip(self.feature_names, importance)), key=lambda x: x[1], reverse=True)
-        plt.bar([x[0] for x in f_important[:5]], [x[1] for x in f_important[:5]])
-        plt.xticks(rotation=20)
-        title = '{0} {1} f_important'.format(self.model_name, self.org_name)
-        plt.title(title)
-        plt.savefig(os.path.join(MODELS_FEATURE_IMPORTANCE, '{0}.png'.format(title)))
-        plt.clf()

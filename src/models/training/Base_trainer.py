@@ -4,7 +4,7 @@ from keras.optimizers import SGD
 from constants import *
 from time import gmtime, strftime
 from src.models.model_learner import ModelLearner
-from src.models.miRNA_transfer_subclass import miTransfer
+from src.models.miRNA_transfer_subclass import miTransfer,api_model
 import numpy as np
 import pandas as pd
 import logging
@@ -24,12 +24,12 @@ class BaseTrainObj(ModelLearner):
         print("---Start training {0} on {1}---\n".format(self.model_name, self.org_name))
         print(f"ann input {self.x.shape}, cnn input {self.sequences.shape}")
         # self.model = miTransfer()
-        model_ = miTransfer()
-        inputs = Input(shape=(self.x.shape[-1],))
-        outputs = model_(inputs)
-        self.model = tf.keras.Model(inputs=inputs, outputs=outputs)
+        self.model = api_model(self.x.shape[-1],)
+        # inputs = Input(shape=(self.x.shape[-1],))
+        # outputs = model_(inputs)
+        # self.model = tf.keras.Model(inputs=inputs, outputs=outputs)
         self.model.compile(optimizer=SGD(lr=0.01, momentum=0.9, clipnorm=1.0), loss='binary_crossentropy',metrics=['acc'])
-        self.history = self.model.fit(self.x, self.y, epochs=2,validation_data=(self.xval, self.yval))
+        self.history = self.model.fit(self.x, self.y, epochs=20,validation_data=(self.xval, self.yval))
 
         # print(self.model.summary())
         print("---Learning Curves---\n")

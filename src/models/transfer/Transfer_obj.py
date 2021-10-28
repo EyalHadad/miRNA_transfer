@@ -5,16 +5,17 @@ import os
 from constants import *
 from time import gmtime, strftime
 from src.models.model_learner import ModelLearner
-from src.models.miRNA_transfer_subclass import miTransfer
+from src.models.miRNA_transfer_subclass import miTransfer, api_model
 import numpy as np
 import pandas as pd
 import logging
-
+from keras.layers import Input
 logging.getLogger("tensorflow").setLevel(logging.CRITICAL)
 import tensorflow as tf
 from tensorflow.python.keras.models import save_model
 from tensorflow.python.keras.models import load_model
 from src.models.models_handler import save_metrics, create_sequence, create_evaluation_dict
+from keras.optimizers import SGD
 
 
 class Transfer_obj:
@@ -34,13 +35,15 @@ class Transfer_obj:
 
     def __init__(self, org_name):
         self.src_model_name = org_name
-        self.l_model = miTransfer()
+        self.l_model = api_model()
+
         print("set all layers to no trainable")
         for l in self.l_model.layers:
             print(l.name, l.trainable)
-            if 'dense_8' not in l.name:
-                l.trainable = False
-        i = 0
+            l.trainable = False
+        self.l_model.get_layer('dense_20').trainable=True
+        self.l_model.get_layer('output').trainable=True
+
 
     def load_dst_data(self, dst_org_name):
         self.dst_org_name = dst_org_name
@@ -80,7 +83,7 @@ class Transfer_obj:
                 return 0
 
             # TODO change second input to sequences - cuz they are not the same shape right now
-            self.l_model.fit([x_train_t, x_train_t], y_train_t, epochs=2)
+            self.l_model.fit([x_train_t, x_train_t], y_train_t, epochs=10)
 
         auc = self.eval_model(t_size)
         return auc

@@ -3,6 +3,19 @@ from keras.layers import Dense, Dropout, Conv1D, Embedding, MaxPooling1D, Flatte
 from keras import layers, Model
 from keras.constraints import maxnorm
 from keras.regularizers import l1
+import keras
+
+
+def api_model(shape=497):
+    x = Input(shape=(shape, ), name="input")
+    ann_dense1 = Dense(100, activation='tanh',name='dense_100')(x)
+    ann_dense2 = Dense(50, activation='tanh', kernel_constraint=maxnorm(3), activity_regularizer=l1(0.001),
+                            kernel_regularizer=l1(0.001),name='dense_50')(ann_dense1)
+    ann_dropout = Dropout(rate=0.5,name='dropout')(ann_dense2)
+    ann_dense3 = Dense(20, activation='tanh',name='dense_20')(ann_dropout)
+    ann_output = Dense(1, activation='sigmoid',name='output')(ann_dense3)
+    model = keras.Model(x, ann_output, name="ann_model")
+    return model
 
 
 class RNN_Branch(Model):

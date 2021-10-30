@@ -19,8 +19,7 @@ class XgboostTrainObj(ModelLearner):
         self.model = xgb.XGBClassifier().fit(self.x, self.y, eval_metric=["error", "logloss"], eval_set=[(self.x, self.y), (self.xval, self.yval)])
         print("---Learning Curves---\n")
         self.plot_learning_curves()
-        model_name = os.path.join(MODELS_OBJECTS_PATH,
-                                  '{0}_{1}_{2}.json'.format(self.model_name,self.org_name, strftime("%Y-%m-%d", gmtime())))
+        model_name = os.path.join(MODELS_OBJECTS_PATH,'{0}_{1}.json'.format(self.model_name,self.org_name))
         self.model.save_model(model_name)
         print("---{0} model saved---\n".format(self.model_name))
 

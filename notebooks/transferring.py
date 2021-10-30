@@ -1,4 +1,4 @@
-from src.models.transfer.Transfer_obj import Transfer_obj
+from src.models.transfer.Base_transfer import BaseTransferObj
 from src.models.models_handler import *
 
 
@@ -9,7 +9,7 @@ def run_transfer(in_res_dict=None):
     for org_name in dataset_list:
         rest = copy.deepcopy(DATASETS)
         rest.remove(org_name)
-        trans_obj = Transfer_obj(org_name)
+        trans_obj = BaseTransferObj(org_name)
         datasets_dict[org_name] = {}
         for dst_org_name in rest:
             trans_obj.load_dst_data(dst_org_name)

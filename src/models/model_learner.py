@@ -35,7 +35,7 @@ class ModelLearner:
         print("training data shape:", train.shape)
         train['sequence'] = train.apply(lambda x: create_sequence(x['miRNA sequence'], x['target sequence']), axis=1)
         y = train['label']
-        X = train.drop(['mRNA_start', 'label','mRNA_name','target sequence','microRNA_name','miRNA sequence','full_mrna'], axis=1)
+        X = train.drop(FEATURES_TO_DROP, axis=1)
         X.drop('sequence', 1).fillna(0,inplace=True)
 
         self.feature_names = list(X.columns)
@@ -76,10 +76,6 @@ class ModelLearner:
         print("Shap values\n")
         explainer = shap.DeepExplainer(self.model, self.x.values.astype('float'))
         shap_values = explainer.shap_values(self.xval.iloc[1:5,].values)
-        # shap.plots.waterfall(shap_values[0], show=False)
-        # plt.title('{0} {1} waterfall'.format(self.model_name,self.org_name))
-        # plt.savefig(os.path.join(MODELS_FEATURE_IMPORTANCE, '{0}_{1}_waterfall.png'.format(self.model_name,self.org_name)))
-        # plt.clf()
         shap.summary_plot(shap_values, feature_names = self.xval.iloc[1:5,].columns, plot_type="bar", show=False, max_display=10,plot_size=(20,20))
         plt.title('{0} {1} SHAP bar'.format(self.model_name,self.org_name))
         plt.savefig(os.path.join(MODELS_FEATURE_IMPORTANCE, '{0}_{1}_bar.png'.format(self.model_name,self.org_name)))
@@ -109,14 +105,14 @@ class ModelLearner:
         print("---Test data was loaded---\n")
         test['sequence'] = test.apply(lambda x: create_sequence(x['miRNA sequence'], x['target sequence']), axis=1)
         y = test['label']
-        X = test.drop(['mRNA_start', 'label', 'mRNA_name', 'target sequence', 'microRNA_name', 'miRNA sequence', 'full_mrna'],axis=1)
+        X = test.drop(FEATURES_TO_DROP,axis=1)
         X.drop('sequence', 1).fillna(0, inplace=True)
 
         sequences_to_pred = np.array(X['sequence'].values.tolist())
         X.drop('sequence', axis=1, inplace=True)
         x = X.astype("float")
 
-        pred = self.model.predict([x,sequences_to_pred])
+        pred = self.model.predict(x)
 
         date_time, model_name,auc = create_evaluation_dict(self.model_name, self.org_name,pred, y)
         pred_res = pd.DataFrame(zip(pred, y), columns=['pred', 'y'])

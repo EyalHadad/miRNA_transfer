@@ -21,7 +21,7 @@ def run_training():
                 train_obj = BaseTrainObj(data, 'Base')
 
             train_obj.train_model()
-            # train_obj.model_explain()
+            train_obj.model_explain()
             model_name,auc = train_obj.evaluate_model()
             intra_dataset_res_dict[model_name] = auc
     return intra_dataset_res_dict

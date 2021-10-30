@@ -5,7 +5,7 @@ from src.models.models_handler import *
 def run_transfer(in_res_dict=None):
     dataset_list = copy.deepcopy(DATASETS)
     datasets_dict = {}
-    transfer_size = TRANSFER_SIZE_LIST_BIG
+    transfer_size = TRANSFER_SIZE_LIST
     for org_name in dataset_list:
         rest = copy.deepcopy(DATASETS)
         rest.remove(org_name)

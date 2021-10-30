@@ -6,7 +6,7 @@ from keras.regularizers import l1
 import keras
 
 
-def api_model(shape=497):
+def api_model(shape):
     x = Input(shape=(shape, ), name="input")
     ann_dense1 = Dense(100, activation='tanh',name='dense_100')(x)
     ann_dense2 = Dense(50, activation='tanh', kernel_constraint=maxnorm(3), activity_regularizer=l1(0.001),

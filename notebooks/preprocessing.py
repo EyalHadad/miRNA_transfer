@@ -5,7 +5,7 @@ def run_preprocessing():
     dataset_list = DATASETS
     # dataset_list = ['worm1']
     for data in dataset_list:
-        create_train_dataset(data, remove_hot_paring=False, only_most_important=True,dist_split=False)
+        create_train_dataset(data, remove_hot_paring=True, only_most_important=False,dist_split=False)
 
 
 if __name__ == '__main__':

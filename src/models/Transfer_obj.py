@@ -10,6 +10,7 @@ import numpy as np
 import pandas as pd
 import logging
 from keras.layers import Input
+
 logging.getLogger("tensorflow").setLevel(logging.CRITICAL)
 import tensorflow as tf
 from tensorflow.python.keras.models import save_model
@@ -50,16 +51,30 @@ class Transfer_obj:
         self.y_test = test['label']
         self.sequences = np.array(train['sequence'].values.tolist())
         self.sequences_tst = np.array(test['sequence'].values.tolist())
-        X = train.drop(FEATURES_TO_DROP,axis=1)
+        X = train.drop(FEATURES_TO_DROP, axis=1)
         self.feature_names = list(X.columns)
         self.x = X.drop('sequence', 1).fillna(0)
         self.x = self.x.astype("float")
-        X_test = test.drop(FEATURES_TO_DROP,axis=1)
+        X_test = test.drop(FEATURES_TO_DROP, axis=1)
         self.x_test = X_test.drop('sequence', 1).fillna(0)
         self.x_test = self.x_test.astype("float")
 
-    def retrain_model(self, t_size):
-        pass
+    def retrain_model(self, t_size, obj_type):
+        num_of_epochs = 1
+        if t_size != 0:
+            try:
+                x_train_t, x_test_t, y_train_t, y_test_t = train_test_split(self.x, self.y, train_size=t_size,
+                                                                            random_state=42)
+            except:
+                return 0
+            # TODO change second input to sequences - cuz they are not the same shape right now
+            if obj_type == 'base':
+                self.l_model.fit(x_train_t, y_train_t, epochs=num_of_epochs)
+            elif obj_type == 'xgboost':
+                self.l_model.fit(x_train_t, y_train_t, early_stopping_rounds=num_of_epochs)
+
+        auc = self.eval_model(t_size)
+        return auc
 
     def eval_model(self, t_size):
         print("Evaluate model")

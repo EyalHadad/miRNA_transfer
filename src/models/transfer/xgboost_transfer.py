@@ -1,3 +1,4 @@
+import pickle
 from src.models.models_handler import save_metrics, create_sequence
 from sklearn.model_selection import train_test_split
 import matplotlib.pyplot as plt
@@ -10,6 +11,7 @@ import numpy as np
 import pandas as pd
 import logging
 from keras.layers import Input
+
 logging.getLogger("tensorflow").setLevel(logging.CRITICAL)
 import tensorflow as tf
 from tensorflow.python.keras.models import save_model
@@ -18,21 +20,13 @@ from src.models.models_handler import save_metrics, create_sequence, create_eval
 from keras.optimizers import SGD
 from src.models.Transfer_obj import Transfer_obj
 
-class BaseTransferObj(Transfer_obj):
+
+class XgboostTransferObj(Transfer_obj):
 
     def __init__(self, org_name):
         Transfer_obj.__init__(self, org_name)
-        self.l_model = api_model(MODEL_INPUT_SHAPE)
-        print("set all layers to no trainable")
-        for l in self.l_model.layers:
-            print(l.name, l.trainable)
-            l.trainable = False
-        self.l_model.get_layer('dense_20').trainable=True
-        self.l_model.get_layer('output').trainable=True
-
+        model_name = os.path.join(MODELS_OBJECTS_PATH, '{0}_{1}.dat'.format(self.model_name, self.org_name))
+        self.l_model = pickle.load(model_name)
 
     def retrain_model(self, t_size):
-        self.l_model.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
-        load_weights_path = os.path.join(MODELS_OBJECTS_PATH, f"{self.src_model_name}/")
-        self.l_model.load_weights(load_weights_path)
-        super(BaseTransferObj, self).retrain_model(t_size,'base')
+        super(XgboostTransferObj, self).retrain_model(t_size,'base')

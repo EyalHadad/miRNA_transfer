@@ -35,4 +35,4 @@ class BaseTransferObj(Transfer_obj):
         self.l_model.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
         load_weights_path = os.path.join(MODELS_OBJECTS_PATH, f"{self.src_model_name}/")
         self.l_model.load_weights(load_weights_path)
-        super(BaseTransferObj, self).retrain_model(t_size,'base')
+        return super(BaseTransferObj, self).retrain_model(t_size,'base')

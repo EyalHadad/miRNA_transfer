@@ -1,4 +1,3 @@
-import pickle
 import matplotlib.pyplot as plt
 import xgboost as xgb
 import os
@@ -19,9 +18,9 @@ class XgboostTrainObj(ModelLearner):
         print("---Start training {0} on {1}---\n".format(self.model_name,self.org_name))
         self.model = xgb.XGBClassifier(kwargs=XGBS_PARAMS).fit(self.x, self.y,early_stopping_rounds=1, eval_metric=["error", "logloss"], eval_set=[(self.xval, self.yval)])
         print("---Learning Curves---\n")
-        self.plot_learning_curves()
+        # self.plot_learning_curves()
         model_name = os.path.join(MODELS_OBJECTS_PATH, '{0}_{1}.dat'.format(self.model_name,self.org_name))
-        pickle.dump(self.model, open(model_name, "wb"))
+        self.model.save_model(model_name)
         print("---{0} model saved---\n".format(self.model_name))
 
 

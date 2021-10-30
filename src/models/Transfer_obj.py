@@ -71,7 +71,7 @@ class Transfer_obj:
             if obj_type == 'base':
                 self.l_model.fit(x_train_t, y_train_t, epochs=num_of_epochs)
             elif obj_type == 'xgboost':
-                self.l_model.fit(x_train_t, y_train_t, early_stopping_rounds=num_of_epochs)
+                self.l_model.fit(x_train_t, y_train_t, early_stopping_rounds=num_of_epochs,eval_set=[(x_test_t[:5,], y_test_t[:5,])])
 
         auc = self.eval_model(t_size)
         return auc

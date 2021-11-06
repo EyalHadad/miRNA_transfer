@@ -24,7 +24,7 @@ def run_transfer(in_res_dict=None, model_type='base'):
     create_res_table(datasets_dict, in_res_dict)
     species_dict = create_species_dict(datasets_dict)
     for r in species_dict.keys():
-        create_res_graph(species_dict[r], r, transfer_size)
+        create_res_graph(species_dict[r], r, transfer_size,model_type)
 
 
 if __name__ == '__main__':

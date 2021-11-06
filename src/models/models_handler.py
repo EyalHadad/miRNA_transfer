@@ -76,15 +76,15 @@ def create_res_table(tabel_dict,in_res_dict):
 
 
 
-def create_res_graph(tabel_dict,org_name,col):
-        res = pd.DataFrame(index = tabel_dict.keys(),columns=col)
-        for c in tabel_dict.keys():
-            for t in tabel_dict[c].keys():
-                res.at[c,t] = round(tabel_dict[c][t],2)
-        res.T.plot(title=org_name)
-        plt.savefig(os.path.join(MODELS_OBJECTS_GRAPHS, f"{org_name}.png"))
-        plt.clf()
-        res.to_csv(os.path.join(MODELS_OBJECTS_GRAPHS, f"{org_name}.csv"))
+def create_res_graph(tabel_dict,org_name,col,model_type):
+    f_header = ['model'] + TRANSFER_SIZE_LIST + ['\n']
+    for c in tabel_dict.keys():  # assume that c is creature
+        f_name = os.path.join(MODELS_OBJECTS_GRAPHS, f"{org_name}_{c}.csv")
+        with open(f_name, 'a') as file:
+            if file.tell() == 0:
+                file.write(','.join(str(x) for x in f_header))
+            row_to_write = [model_type] + [str(round(tabel_dict[c][t], 2)) for t in tabel_dict[c].keys()] + ['\n']
+            file.write(','.join(row_to_write))
 
 def create_empty_species_dict():
     di = {}

@@ -16,7 +16,7 @@ class XgboostTrainObj(ModelLearner):
     def train_model(self):
         super().prep_model_training()
         print("---Start training {0} on {1}---\n".format(self.model_name,self.org_name))
-        self.model = xgb.XGBClassifier(kwargs=XGBS_PARAMS).fit(self.x, self.y,early_stopping_rounds=1, eval_metric=["error", "logloss"], eval_set=[(self.xval, self.yval)])
+        self.model = xgb.XGBClassifier(kwargs=XGBS_PARAMS).fit(self.x, self.y, eval_metric=["error", "logloss"], eval_set=[(self.xval, self.yval)])
         print("---Learning Curves---\n")
         # self.plot_learning_curves()
         model_name = os.path.join(MODELS_OBJECTS_PATH, '{0}_{1}.dat'.format(self.model_name,self.org_name))

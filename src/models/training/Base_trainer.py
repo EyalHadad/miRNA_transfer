@@ -25,7 +25,7 @@ class BaseTrainObj(ModelLearner):
         print(f"ann input {self.x.shape}, cnn input {self.sequences.shape}")
         self.model = api_model(self.x.shape[-1],)
         self.model.compile(optimizer=SGD(lr=0.01, momentum=0.9, clipnorm=1.0), loss='binary_crossentropy',metrics=['acc'])
-        self.history = self.model.fit(self.x, self.y, epochs=1,validation_data=(self.xval, self.yval))
+        self.history = self.model.fit(self.x, self.y, epochs=TRAIN_EPOCHS,validation_data=(self.xval, self.yval))
         # print(self.model.summary())
         print("---Learning Curves---\n")
         self.plot_learning_curves()

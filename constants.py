@@ -32,7 +32,8 @@ FEATURES_TO_DROP = ['mRNA_start', 'label','mRNA_name','target sequence','microRN
 'canonic_seed','duplex_RNAplex_equals','non_canonic_seed','site_start','num_of_pairs','mRNA_end','constraint']
 # ,'Accessibility (nt=21, len=10)',
 MODEL_INPUT_SHAPE = 490
-
+TRAIN_EPOCHS = 20
+TRANS_EPOCHS = 10
 XGBS_PARAMS = {
             "objective": ["binary:hinge"],
             "booster" : ["gbtree"],

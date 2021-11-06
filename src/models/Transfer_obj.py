@@ -60,7 +60,6 @@ class Transfer_obj:
         self.x_test = self.x_test.astype("float")
 
     def retrain_model(self, t_size, obj_type):
-        num_of_epochs = 1
         if t_size != 0:
             try:
                 x_train_t, x_test_t, y_train_t, y_test_t = train_test_split(self.x, self.y, train_size=t_size,
@@ -69,9 +68,9 @@ class Transfer_obj:
                 return 0
             # TODO change second input to sequences - cuz they are not the same shape right now
             if obj_type == 'base':
-                self.l_model.fit(x_train_t, y_train_t, epochs=num_of_epochs)
+                self.l_model.fit(x_train_t, y_train_t, epochs=TRANS_EPOCHS)
             elif obj_type == 'xgboost':
-                self.l_model.fit(x_train_t, y_train_t, early_stopping_rounds=num_of_epochs,eval_set=[(x_test_t[:5,], y_test_t[:5,])])
+                self.l_model.fit(x_train_t, y_train_t, early_stopping_rounds=TRANS_EPOCHS,eval_set=[(x_test_t.iloc[:5,], y_test_t.iloc[:5,])])
 
         auc = self.eval_model(t_size)
         return auc

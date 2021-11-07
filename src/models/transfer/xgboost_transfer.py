@@ -29,5 +29,5 @@ class XgboostTransferObj(Transfer_obj):
         self.l_model = xgb.XGBClassifier(kwargs=XGBS_PARAMS)  # init model
         self.l_model.load_model(model_name)
 
-    def retrain_model(self, t_size):
-        return super(XgboostTransferObj, self).retrain_model(t_size,'xgboost')
+    def retrain_model(self, t_size,obj_type,trans_epochs):
+        return super(XgboostTransferObj, self).retrain_model(t_size,'xgboost',trans_epochs)

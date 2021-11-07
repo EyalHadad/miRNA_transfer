@@ -3,7 +3,7 @@ from src.models.transfer.xgboost_transfer import XgboostTransferObj
 from src.models.models_handler import *
 
 
-def run_transfer(in_res_dict=None, model_type='base'):
+def run_transfer(in_res_dict=None, model_type='base', trans_epochs=20):
     dataset_list = copy.deepcopy(DATASETS)
     datasets_dict = {}
     transfer_size = TRANSFER_SIZE_LIST
@@ -19,14 +19,18 @@ def run_transfer(in_res_dict=None, model_type='base'):
             trans_obj.load_dst_data(dst_org_name)
             datasets_dict[org_name][dst_org_name] = {}
             for t_size in transfer_size:
-                auc = trans_obj.retrain_model(t_size)
+                auc = trans_obj.retrain_model(t_size,model_type,trans_epochs)
                 datasets_dict[org_name][dst_org_name][t_size] = auc
-    create_res_table(datasets_dict, in_res_dict)
+    if in_res_dict is not None:
+        create_res_table(datasets_dict, in_res_dict)
     species_dict = create_species_dict(datasets_dict)
     for r in species_dict.keys():
-        create_res_graph(species_dict[r], r, transfer_size,model_type)
+        create_res_graph(species_dict[r], r, transfer_size,model_type,trans_epochs)
 
 
 if __name__ == '__main__':
-    run_transfer()
+    for i in range(20,120,20):
+        # TRANS_EPOCHS = i
+        run_transfer(in_res_dict=None, model_type='base', trans_epochs=i)
+        # print(i)
 i = 9

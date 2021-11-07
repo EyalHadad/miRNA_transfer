@@ -33,7 +33,7 @@ FEATURES_TO_DROP = ['mRNA_start', 'label','mRNA_name','target sequence','microRN
 # ,'Accessibility (nt=21, len=10)',
 MODEL_INPUT_SHAPE = 490
 TRAIN_EPOCHS = 20
-TRANS_EPOCHS = 10
+# TRANS_EPOCHS = 10
 XGBS_PARAMS = {
             "objective": ["binary:hinge"],
             "booster" : ["gbtree"],

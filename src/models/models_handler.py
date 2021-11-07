@@ -76,14 +76,14 @@ def create_res_table(tabel_dict,in_res_dict):
 
 
 
-def create_res_graph(tabel_dict,org_name,col,model_type):
+def create_res_graph(tabel_dict,org_name,col,model_type,trans_epochs):
     f_header = ['model'] + TRANSFER_SIZE_LIST + ['\n']
     for c in tabel_dict.keys():  # assume that c is creature
         f_name = os.path.join(MODELS_OBJECTS_GRAPHS, f"{org_name}_{c}.csv")
         with open(f_name, 'a') as file:
             if file.tell() == 0:
                 file.write(','.join(str(x) for x in f_header))
-            row_to_write = [model_type] + [str(round(tabel_dict[c][t], 2)) for t in tabel_dict[c].keys()] + ['\n']
+            row_to_write = [f"{model_type}_{trans_epochs}"] + [str(round(tabel_dict[c][t], 2)) for t in tabel_dict[c].keys()] + ['\n']
             file.write(','.join(row_to_write))
 
 def create_empty_species_dict():
@@ -113,3 +113,15 @@ def create_species_dict(table_dict):
                 org_list = new_dict[s_org][d_org][s]
                 new_dict[s_org][d_org][s] = round(mean(org_list),2)
     return new_dict
+
+
+def create_transfer_graphs(compare_to_xgboost = False ):
+    csv_files = [x for x in os.listdir(MODELS_OBJECTS_GRAPHS) if '.csv' in x]
+    for file in csv_files:
+        data = pd.read_csv(os.path.join(MODELS_OBJECTS_GRAPHS,file),index_col=0)
+        data.dropna(how='all', axis=1, inplace=True)
+        if compare_to_xgboost:
+            data = data.loc[['base_20', 'xgboost_20']]
+        data.T.plot(title=file.split('.')[0])
+        plt.savefig(os.path.join(MODELS_OBJECTS_GRAPHS, f"{file.split('.')[0]}.png"))
+        plt.clf()

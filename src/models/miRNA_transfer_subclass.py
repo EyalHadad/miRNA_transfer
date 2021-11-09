@@ -14,7 +14,7 @@ def api_model(shape):
     ann_dropout = Dropout(rate=0.5,name='dropout')(ann_dense2)
     ann_dense3 = Dense(20, activation='tanh',name='dense_20')(ann_dropout)
     ann_output = Dense(1, activation='sigmoid',name='output')(ann_dense3)
-    model = keras.Model(x, ann_output, name="ann_model")
+    model = Model(x, ann_output, name="ann_model")
     return model
 
 

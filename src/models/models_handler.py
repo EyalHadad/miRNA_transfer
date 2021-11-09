@@ -9,6 +9,7 @@ from statistics import mean
 from sklearn import metrics
 from datetime import datetime
 import matplotlib.pyplot as plt
+import seaborn as sns
 
 def save_feature_importance_res(row_desc, f_importance_list,type_name):
     f_path = os.path.join(MODELS_FEATURE_IMPORTANCE, 'models_feature_importance_{0}.csv'.format(type_name))
@@ -125,3 +126,29 @@ def create_transfer_graphs(compare_to_xgboost = False ):
         data.T.plot(title=file.split('.')[0])
         plt.savefig(os.path.join(MODELS_OBJECTS_GRAPHS, f"{file.split('.')[0]}.png"))
         plt.clf()
+
+
+def draw_heatmap(data,img_name,img_title,xlabel = 'Testing Dataset',ylabel = 'Training Dataset'):
+    ax = sns.heatmap(data, cmap="RdBu_r", square=True, linewidths=3, annot=True)
+    plt.title(img_title, fontsize=15)
+    plt.xlabel(xlabel, fontsize=10)
+    plt.ylabel(ylabel, fontsize=10)
+    ax.xaxis.label.set_color('purple')
+    ax.title.set_color('purple')
+    ax.yaxis.label.set_color('purple')
+    ax.figure.tight_layout()
+    plt.savefig(os.path.join(MODELS_OBJECTS_TABELS, img_name))
+    plt.clf()
+
+
+def create_heatmaps():
+    f_names = {'miRNA_Net': r"base_30_10_2021 16_00_37.csv", 'xgboost': r"xg_30_10_2021 18_29_07.csv"}
+    data1 = pd.read_csv(os.path.join(MODELS_OBJECTS_TABELS, f_names['miRNA_Net']), index_col=0)
+    draw_heatmap(data=data1, img_name=f"miRNA_Net_heatmap.png", img_title='miRNA_Net')
+    data2 = pd.read_csv(os.path.join(MODELS_OBJECTS_TABELS, f_names['xgboost']), index_col=0)
+    draw_heatmap(data=data2, img_name=f"xgboost_heatmap.png", img_title='xgboost')
+    draw_heatmap(data=data1 - data2, img_name=f"diff.png", img_title='Models Differences')
+
+
+if __name__ =='__main__':
+    create_transfer_graphs()

@@ -15,6 +15,8 @@ MODELS_OBJECTS_GRAPHS = "models/graphs"
 MODELS_OUTPUT_PATH = "models/learning_output"
 MODELS_FEATURE_IMPORTANCE = "reports/feature_importance"
 MODELS_PREDICTION_PATH = "models/prediction"
+MODELS_STD_PATH = "models/std"
+
 TRANSFER_SIZE_LIST = [0, 100, 200, 500, 700]
 # TRANSFER_SIZE_LIST = [0, 100, 200, 500, 700,1500,3000,5000,10000]
 DATASETS = ['cow1', 'worm1', 'worm2', 'human1', 'human2', 'human3', 'mouse1', 'mouse2']

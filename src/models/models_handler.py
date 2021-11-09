@@ -10,6 +10,9 @@ from sklearn import metrics
 from datetime import datetime
 import matplotlib.pyplot as plt
 import seaborn as sns
+from collections import defaultdict
+import statistics
+
 
 def save_feature_importance_res(row_desc, f_importance_list,type_name):
     f_path = os.path.join(MODELS_FEATURE_IMPORTANCE, 'models_feature_importance_{0}.csv'.format(type_name))
@@ -116,7 +119,7 @@ def create_species_dict(table_dict):
     return new_dict
 
 
-def create_transfer_graphs(compare_to_xgboost = False ):
+def create_transfer_graphs(compare_to_xgboost = True ):
     csv_files = [x for x in os.listdir(MODELS_OBJECTS_GRAPHS) if '.csv' in x]
     for file in csv_files:
         data = pd.read_csv(os.path.join(MODELS_OBJECTS_GRAPHS,file),index_col=0)
@@ -141,8 +144,7 @@ def draw_heatmap(data,img_name,img_title,xlabel = 'Testing Dataset',ylabel = 'Tr
     plt.clf()
 
 
-def create_heatmaps():
-    f_names = {'miRNA_Net': r"base_30_10_2021 16_00_37.csv", 'xgboost': r"xg_30_10_2021 18_29_07.csv"}
+def create_heatmaps(f_names):
     data1 = pd.read_csv(os.path.join(MODELS_OBJECTS_TABELS, f_names['miRNA_Net']), index_col=0)
     draw_heatmap(data=data1, img_name=f"miRNA_Net_heatmap.png", img_title='miRNA_Net')
     data2 = pd.read_csv(os.path.join(MODELS_OBJECTS_TABELS, f_names['xgboost']), index_col=0)
@@ -150,5 +152,34 @@ def create_heatmaps():
     draw_heatmap(data=data1 - data2, img_name=f"diff.png", img_title='Models Differences')
 
 
-if __name__ =='__main__':
-    create_transfer_graphs()
+def save_std(data, output_f_name):
+    res_dict = defaultdict(list)
+    std_dict = {'cow_worm':[('cow1','worm1'),('cow1','worm2')]
+                ,'cow_human':[('cow1','human1'),('cow1','human2'),('cow1','human3')]
+                ,'cow_mouse':[('cow1','mouse1'),('cow1','mouse2')]
+                ,'worm_cow':[('worm1','cow1'),('worm2','cow1')]
+                ,'worm_human':[('worm1','human1'),('worm1','human2'),('worm1','human3'),('worm2','human1'),('worm2','human2'),('worm2','human3')]
+                ,'worm_mouse':[('worm1','mouse1'),('worm1','mouse2'),('worm2','mouse1'),('worm2','mouse2')]
+                , 'human_cow': [('human1','cow1'), ('human2','cow1'), ('human3','cow1')]
+                , 'human_worm': [('human1','worm1'),('human2','worm1'),('human3','worm1'),('human1','worm2'),('human2','worm2'),('human3','worm2')]
+                , 'human_mouse': [('human1', 'mouse1'), ('human2', 'mouse1'), ('human3', 'mouse1'), ('human1', 'mouse2'),('human2', 'mouse2'), ('human3', 'mouse2')]
+                , 'mouse_cow': [('mouse1', 'cow1'), ('mouse2', 'cow1')]
+                , 'mouse_human': [('mouse1', 'human1'), ('mouse1', 'human2'), ('mouse1', 'human3'), ('mouse2', 'human1'),('mouse2', 'human2'), ('mouse2', 'human3')]
+                , 'mouse_worm': [('mouse1','worm1'), ('mouse2','worm1'), ('mouse1','worm2'), ('mouse2','worm2')]
+                }
+    for k,v in std_dict.items():
+        for elm in std_dict[k]:
+            res_dict[k].append(data.loc[elm[0],elm[1]])
+    with open(os.path.join(MODELS_STD_PATH,output_f_name),'w') as f:
+        for k,v in res_dict.items():
+            f.write("{0},{1}\n".format(k,statistics.stdev(v)))
+
+
+
+def calculate_std(f_names):
+    data1 = pd.read_csv(os.path.join(MODELS_OBJECTS_TABELS, f_names['miRNA_Net']), index_col=0)
+    save_std(data=data1,output_f_name=f"std_miRNA_Net.csv")
+    data2 = pd.read_csv(os.path.join(MODELS_OBJECTS_TABELS, f_names['xgboost']), index_col=0)
+    save_std(data=data2, output_f_name=f"std_xgboost.csv")
+
+

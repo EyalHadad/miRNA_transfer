@@ -10,4 +10,4 @@ if __name__ == '__main__':
     run_preprocessing()
     in_res_dict = run_training(model_type)
     run_transfer(in_res_dict,model_type)
-    # create_transfer_graphs(True)
+    create_transfer_graphs(compare_to_xgboost = True)

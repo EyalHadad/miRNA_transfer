@@ -106,17 +106,21 @@ class ModelLearner:
         test['sequence'] = test.apply(lambda x: create_sequence(x['miRNA sequence'], x['target sequence']), axis=1)
         y = test['label']
         X = test.drop(FEATURES_TO_DROP,axis=1)
-        X.drop('sequence', 1).fillna(0, inplace=True)
-
-        sequences_to_pred = np.array(X['sequence'].values.tolist())
         X.drop('sequence', axis=1, inplace=True)
         x = X.astype("float")
 
         pred = self.model.predict(x)
 
         date_time, model_name,auc = create_evaluation_dict(self.model_name, self.org_name,pred, y)
-        pred_res = pd.DataFrame(zip(pred, y), columns=['pred', 'y'])
-        pred_res.to_csv(os.path.join(MODELS_PREDICTION_PATH, "pred_{0}_{1}.csv".format(model_name, date_time)),
+        total_frame = x
+        total_frame["actual"] = y
+        total_frame["predicted"] = np.round(pred)
+        incorrect = total_frame[total_frame["actual"] != total_frame["predicted"]]
+        incorrect.to_csv(os.path.join(MODELS_PREDICTION_PATH, "incorrect_{0}_{1}.csv".format(model_name, date_time)),
                         index=False)
+
+        # pred_res = pd.DataFrame(zip(pred, y), columns=['pred', 'y'])
+        # pred_res.to_csv(os.path.join(MODELS_PREDICTION_PATH, "pred_{0}_{1}.csv".format(model_name, date_time)),
+        #                 index=False)
         return model_name,auc
 

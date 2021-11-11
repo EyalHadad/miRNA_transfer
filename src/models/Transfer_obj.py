@@ -1,4 +1,4 @@
-from src.models.models_handler import save_metrics, create_sequence
+from src.models.models_handler import save_metrics, create_sequence, load_trained_model
 from sklearn.model_selection import train_test_split
 import matplotlib.pyplot as plt
 import os
@@ -59,7 +59,7 @@ class Transfer_obj:
         self.x_test = X_test.drop('sequence', 1).fillna(0)
         self.x_test = self.x_test.astype("float")
 
-    def retrain_model(self, t_size, obj_type,trans_epochs):
+    def retrain_model(self, t_size, obj_type, trans_epochs):
         if t_size != 0:
             try:
                 x_train_t, x_test_t, y_train_t, y_test_t = train_test_split(self.x, self.y, train_size=t_size,
@@ -70,19 +70,31 @@ class Transfer_obj:
             if obj_type == 'base':
                 self.l_model.fit(x_train_t, y_train_t, epochs=trans_epochs)
             elif obj_type == 'xgboost':
-                self.l_model.fit(x_train_t, y_train_t, early_stopping_rounds=trans_epochs,eval_set=[(x_test_t.iloc[:5,], y_test_t.iloc[:5,])])
+                self.l_model.fit(x_train_t, y_train_t, early_stopping_rounds=trans_epochs,
+                                 eval_set=[(x_test_t.iloc[:5, ], y_test_t.iloc[:5, ])])
 
-        auc = self.eval_model(t_size)
+        auc = self.eval_model(t_size, obj_type)
         return auc
 
-    def eval_model(self, t_size):
+    def train_new_model(self, t_size, obj_type):
+        if t_size == 0:
+            return 0
+
+        x_train_t, x_test_t, y_train_t, y_test_t = train_test_split(self.x, self.y, train_size=t_size, random_state=42)
+        model = load_trained_model(obj_type, self.dst_org_name)
+        if obj_type == 'base':
+            model.fit(x_train_t, y_train_t, epochs=20)
+        elif obj_type == 'xgboost':
+            model.fit(x_train_t, y_train_t, early_stopping_rounds=20,
+                      eval_set=[(x_test_t.iloc[:5, ], y_test_t.iloc[:5, ])])
+        pred = model.predict(self.x_test)
+        m_name = f"{obj_type}_{self.src_model_name}_{str(t_size)}"
+        date_time, org_name, auc = create_evaluation_dict(m_name, 'baseline', pred, self.y_test)
+        return auc
+
+    def eval_model(self, t_size, obj_type):
         print("Evaluate model")
-        # TODO change second input to sequences - cuz they are not the same shape right now
-        # print(f" x shape:{self.x_test.shape} and seq sahpe: {self.sequences_tst.shape}")
         pred = self.l_model.predict(self.x_test)
-        date_time, org_name, auc = create_evaluation_dict(self.src_model_name + "_" + str(t_size), self.dst_org_name,
-                                                          pred, self.y_test)
-        pred_res = pd.DataFrame(zip(pred, self.y_test), columns=['pred', 'y'])
-        pred_file_name = "pred_{0}_{1}_{2}.csv".format(self.src_model_name, t_size, self.dst_org_name)
-        pred_res.to_csv(os.path.join(MODELS_PREDICTION_PATH, pred_file_name), index=False)
+        m_name = f"{obj_type}_{self.src_model_name}_{str(t_size)}"
+        date_time, org_name, auc = create_evaluation_dict(m_name, self.dst_org_name, pred, self.y_test)
         return auc

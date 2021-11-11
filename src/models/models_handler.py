@@ -5,13 +5,30 @@ from constants import *
 import pickle
 import numpy as np
 import copy
-from statistics import mean
 from sklearn import metrics
 from datetime import datetime
 import matplotlib.pyplot as plt
 import seaborn as sns
-from collections import defaultdict
-import statistics
+import xgboost as xgb
+
+from src.models.miRNA_transfer_subclass import api_model
+
+
+def load_trained_model(model_type,org_name):
+    if model_type == 'base':
+        model = api_model(MODEL_INPUT_SHAPE)
+        model.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
+        load_weights_path = os.path.join(MODELS_OBJECTS_PATH, f"{org_name}/")
+        model.load_weights(load_weights_path)
+    else:
+        model_name = os.path.join(MODELS_OBJECTS_PATH, 'Xgboost_{0}.dat'.format(org_name))
+        model = xgb.XGBClassifier(kwargs=XGBS_PARAMS)  # init model
+        model.load_model(model_name)
+
+    return model
+
+
+
 
 
 def save_feature_importance_res(row_desc, f_importance_list,type_name):
@@ -67,8 +84,10 @@ def create_evaluation_dict(t_model_name, org_name, pred, y):
     return date_time, org_name, eval_dict['AUC']
 
 
-def create_res_table(tabel_dict,in_res_dict):
+def save_cross_org_table(tabel_dict, model_type):
     print("--- Saving tabel results ---")
+    df = pd.read_csv(os.path.join(MODELS_INTRA_TABELS, f"{model_type}.csv"))
+    in_res_dict = dict(zip(df[df.columns[0]], df[df.columns[1]]))
     res = pd.DataFrame(index = tabel_dict.keys(),columns=tabel_dict.keys())
     for r in tabel_dict.keys():
         res.at[r, r] = round(in_res_dict[r],2)
@@ -76,11 +95,10 @@ def create_res_table(tabel_dict,in_res_dict):
             res.at[r, c] = round(tabel_dict[r][c][0],2)
 
     date_time = datetime.now().strftime("%d_%m_%Y %H_%M_%S")
-    res.to_csv(os.path.join(MODELS_OBJECTS_TABELS, f"{date_time}.csv"))
+    res.to_csv(os.path.join(MODELS_CROSS_ORG_TABELS, f"{model_type}_{date_time}.csv"))
 
 
-
-def create_res_graph(tabel_dict,org_name,col,model_type,trans_epochs):
+def create_res_graph(tabel_dict,org_name,model_type,trans_epochs):
     f_header = ['model'] + TRANSFER_SIZE_LIST + ['\n']
     for c in tabel_dict.keys():  # assume that c is creature
         f_name = os.path.join(MODELS_OBJECTS_GRAPHS, f"{org_name}_{c}.csv")
@@ -103,20 +121,33 @@ def create_empty_species_dict():
                 di[a][r][s] = []
     return di
 
+def save_intra_dataset(table_dict, model_type):
+    data=pd.DataFrame.from_dict(table_dict, orient='index')
+    f_name = os.path.join(MODELS_INTRA_TABELS, f"{model_type}.csv")
+    data.to_csv(f_name)
 
-def create_species_dict(table_dict):
-    new_dict = create_empty_species_dict()
+
+def save_transfer_table(table_dict, model_type, trans_epochs):
+    transfer_dict = create_empty_species_dict()
+
     for src_org in table_dict.keys():
         for dst_org in table_dict.keys():
-            if dst_org[:-1] in new_dict[src_org[:-1]]:
+            if dst_org[:-1] in transfer_dict[src_org[:-1]]:
                 for s, val in table_dict[src_org][dst_org].items():
-                    new_dict[src_org[:-1]][dst_org[:-1]][s].append(val)
-    for s_org in new_dict.keys():
-        for d_org in new_dict[s_org].keys():
-            for s,val in new_dict[s_org][d_org].items():
-                org_list = new_dict[s_org][d_org][s]
-                new_dict[s_org][d_org][s] = round(mean(org_list),2)
-    return new_dict
+                    transfer_dict[src_org[:-1]][dst_org[:-1]][s].append(val)
+    f_name = os.path.join(MODELS_OBJECTS_TRANSFER_TABLES, f"{model_type}_{trans_epochs}_transfer.csv")
+    with open(f_name, 'w') as f:
+        f_header = ['src_org', 'dst_org'] + TRANSFER_SIZE_LIST + ['\n']
+        f.write(','.join(str(x) for x in f_header))
+        for s_org, v in transfer_dict.items():
+            for d_org, t_values in transfer_dict[s_org].items():
+                t_values = []
+                for t_size, values in transfer_dict[s_org][d_org].items():
+                    l_str = [str(round(x, 2)) for x in values]
+                    t_values.append(":".join(l_str))
+
+                row_to_write = [s_org, d_org] + [val for val in t_values] + ['\n']
+                f.write(','.join(row_to_write))
 
 
 def create_transfer_graphs(compare_to_xgboost = True ):
@@ -126,60 +157,29 @@ def create_transfer_graphs(compare_to_xgboost = True ):
         data.dropna(how='all', axis=1, inplace=True)
         if compare_to_xgboost:
             data = data.loc[['base_20', 'xgboost_20']]
-        data.T.plot(title=file.split('.')[0])
-        plt.savefig(os.path.join(MODELS_OBJECTS_GRAPHS, f"{file.split('.')[0]}.png"))
-        plt.clf()
+        draw_transer_graph(data, file)
 
 
-def draw_heatmap(data,img_name,img_title,xlabel = 'Testing Dataset',ylabel = 'Training Dataset'):
-    ax = sns.heatmap(data, cmap="RdBu_r", square=True, linewidths=3, annot=True)
-    plt.title(img_title, fontsize=15)
-    plt.xlabel(xlabel, fontsize=10)
-    plt.ylabel(ylabel, fontsize=10)
-    ax.xaxis.label.set_color('purple')
+def draw_transer_graph(data, file):#TODO after calculate std
+    sns.set_theme(style="darkgrid")
+    xgboost_label = pd.read_csv(os.path.join(MODELS_STD_PATH,'std_xgboost.csv'),header=None,names=['model', 'value'])
+    mirna_net_label = pd.read_csv(os.path.join(MODELS_STD_PATH,'std_miRNA_Net.csv'),header=None,names=['model', 'value'])
+    ax = sns.lineplot(data=data.T, markers=True, dashes=False, linewidth=2.5)
+    plt.annotate("Point 1", (1,data.loc['xgboost_20','100']))
+    # for item, color in zip(data.groupby('0'),['r','b','g']):
+    #     # item[1] is a grouped data frame
+    #     for x, y, m in item[1][['100', '200','700']].values:
+    #         ax.text(x, y, f'{m:.2f}', color=color)
+    #
+
+    plt.title(file.split('.')[0], fontsize=15)
+    plt.xlabel('#Target observations', fontsize=10)
+    plt.ylabel('AUC', fontsize=10)
     ax.title.set_color('purple')
-    ax.yaxis.label.set_color('purple')
     ax.figure.tight_layout()
-    plt.savefig(os.path.join(MODELS_OBJECTS_TABELS, img_name))
+    plt.savefig(os.path.join(MODELS_OBJECTS_GRAPHS, f"{file.split('.')[0]}.png"))
     plt.clf()
 
 
-def create_heatmaps(f_names):
-    data1 = pd.read_csv(os.path.join(MODELS_OBJECTS_TABELS, f_names['miRNA_Net']), index_col=0)
-    draw_heatmap(data=data1, img_name=f"miRNA_Net_heatmap.png", img_title='miRNA_Net')
-    data2 = pd.read_csv(os.path.join(MODELS_OBJECTS_TABELS, f_names['xgboost']), index_col=0)
-    draw_heatmap(data=data2, img_name=f"xgboost_heatmap.png", img_title='xgboost')
-    draw_heatmap(data=data1 - data2, img_name=f"diff.png", img_title='Models Differences')
-
-
-def save_std(data, output_f_name):
-    res_dict = defaultdict(list)
-    std_dict = {'cow_worm':[('cow1','worm1'),('cow1','worm2')]
-                ,'cow_human':[('cow1','human1'),('cow1','human2'),('cow1','human3')]
-                ,'cow_mouse':[('cow1','mouse1'),('cow1','mouse2')]
-                ,'worm_cow':[('worm1','cow1'),('worm2','cow1')]
-                ,'worm_human':[('worm1','human1'),('worm1','human2'),('worm1','human3'),('worm2','human1'),('worm2','human2'),('worm2','human3')]
-                ,'worm_mouse':[('worm1','mouse1'),('worm1','mouse2'),('worm2','mouse1'),('worm2','mouse2')]
-                , 'human_cow': [('human1','cow1'), ('human2','cow1'), ('human3','cow1')]
-                , 'human_worm': [('human1','worm1'),('human2','worm1'),('human3','worm1'),('human1','worm2'),('human2','worm2'),('human3','worm2')]
-                , 'human_mouse': [('human1', 'mouse1'), ('human2', 'mouse1'), ('human3', 'mouse1'), ('human1', 'mouse2'),('human2', 'mouse2'), ('human3', 'mouse2')]
-                , 'mouse_cow': [('mouse1', 'cow1'), ('mouse2', 'cow1')]
-                , 'mouse_human': [('mouse1', 'human1'), ('mouse1', 'human2'), ('mouse1', 'human3'), ('mouse2', 'human1'),('mouse2', 'human2'), ('mouse2', 'human3')]
-                , 'mouse_worm': [('mouse1','worm1'), ('mouse2','worm1'), ('mouse1','worm2'), ('mouse2','worm2')]
-                }
-    for k,v in std_dict.items():
-        for elm in std_dict[k]:
-            res_dict[k].append(data.loc[elm[0],elm[1]])
-    with open(os.path.join(MODELS_STD_PATH,output_f_name),'w') as f:
-        for k,v in res_dict.items():
-            f.write("{0},{1}\n".format(k,statistics.stdev(v)))
-
-
-
-def calculate_std(f_names):
-    data1 = pd.read_csv(os.path.join(MODELS_OBJECTS_TABELS, f_names['miRNA_Net']), index_col=0)
-    save_std(data=data1,output_f_name=f"std_miRNA_Net.csv")
-    data2 = pd.read_csv(os.path.join(MODELS_OBJECTS_TABELS, f_names['xgboost']), index_col=0)
-    save_std(data=data2, output_f_name=f"std_xgboost.csv")
 
 

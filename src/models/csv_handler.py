@@ -32,6 +32,20 @@ def save_cross_org_table(tabel_dict, model_type):
     res.to_csv(os.path.join(MODELS_CROSS_ORG_TABELS, f"{model_type}_{date_time}.csv"))
 
 
+def save_intra_transfer_table(transfer_dict, model_type, trans_epochs):
+    f_name = os.path.join(MODELS_INTRA_TRANSFER_TABLES, f"{model_type}_{trans_epochs}_transfer.csv")
+    with open(f_name, 'w') as f:
+        f_header = ['src_org', 'dst_org'] + TRANSFER_SIZE_LIST + ['\n']
+        f.write(','.join(str(x) for x in f_header))
+        for s_org, v in transfer_dict.items():
+            for d_org, t_values in transfer_dict[s_org].items():
+                t_values = []
+                for t_size, value in transfer_dict[s_org][d_org].items():
+                    t_values.append(str(round(value, 2)))
+                row_to_write = [s_org, d_org] + [val for val in t_values] + ['\n']
+                f.write(','.join(row_to_write))
+
+
 def save_transfer_table(table_dict, model_type, trans_epochs):
     transfer_dict = create_empty_species_dict()
 

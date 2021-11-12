@@ -7,7 +7,8 @@ import numpy as np
 from constants import *
 from sklearn.model_selection import train_test_split
 import os
-from src.models.models_handler import save_metrics, create_sequence, create_evaluation_dict, load_trained_model
+from src.models.models_handler import create_sequence, create_evaluation_dict, load_trained_model
+from src.models.csv_handler import save_metrics
 
 
 class ModelLearner:

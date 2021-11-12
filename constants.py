@@ -1,23 +1,22 @@
-
-
-EXTERNAL_PATH = "data/external"
 RAW_PATH = "data/raw"
+INTERIM_PATH = "data/interim"
+EXTERNAL_PATH = "data/external"
 EXTERNAL_TRAIN_PATH = "data/external/train"
 EXTERNAL_TEST_PATH = "data/external/test"
-INTERIM_PATH = "data/interim"
 PROCESSED_PATH = "data/processed"
 PROCESSED_TRAIN_PATH = "data/processed/train"
 PROCESSED_TEST_PATH = "data/processed/test"
 MODELS_PATH = "models"
+MODELS_STATISTICS_PATH = "models/statistics"
+MODELS_PREDICTION_PATH = "models/prediction"
 MODELS_OBJECTS_PATH = "models/objects"
 MODELS_INTRA_TABELS = "models/intra_tabels"
 MODELS_CROSS_ORG_TABELS = "models/cross_org_tabels"
 MODELS_OBJECTS_TRANSFER_TABLES = "models/transfer_tables"
 MODELS_OBJECTS_GRAPHS = "models/graphs"
+MODELS_GRAPHS_HEATMAP = "models/graphs/heatmap"
 MODELS_OUTPUT_PATH = "models/learning_output"
 MODELS_FEATURE_IMPORTANCE = "reports/feature_importance"
-MODELS_PREDICTION_PATH = "models/prediction"
-MODELS_STD_PATH = "models/std"
 
 TRANSFER_SIZE_LIST = [0, 100, 200, 500, 700]
 # TRANSFER_SIZE_LIST = [0, 100, 200, 500, 700,1500,3000,5000,10000]

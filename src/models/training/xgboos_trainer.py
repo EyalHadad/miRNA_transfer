@@ -4,7 +4,7 @@ import os
 from constants import *
 from time import gmtime, strftime
 from src.models.model_learner import ModelLearner
-from src.models.models_handler import save_feature_importance_res
+from src.models.csv_handler import save_feature_importance_res
 
 
 class XgboostTrainObj(ModelLearner):

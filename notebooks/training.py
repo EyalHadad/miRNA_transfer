@@ -1,4 +1,4 @@
-from src.models.models_handler import save_intra_dataset
+from src.models.csv_handler import save_intra_dataset
 from src.models.training.xgboos_trainer import XgboostTrainObj
 from src.models.training.GaussianNB_trainer import NbTrainObj
 from src.models.training.RF_trainer import RfTrainObj

@@ -1,5 +1,6 @@
 import xgboost as xgb
-from src.models.models_handler import save_metrics, create_sequence
+from src.models.models_handler import create_sequence
+from src.models.csv_handler import save_metrics
 from sklearn.model_selection import train_test_split
 import matplotlib.pyplot as plt
 import os

@@ -1,6 +1,8 @@
+from src.models.csv_handler import save_cross_org_table, save_transfer_table
 from src.models.transfer.Base_transfer import BaseTransferObj
 from src.models.transfer.xgboost_transfer import XgboostTransferObj
 from src.models.models_handler import *
+import copy
 
 
 def run_transfer(model_type='base', trans_epochs=20):
@@ -35,9 +37,8 @@ def run_transfer(model_type='base', trans_epochs=20):
 
 if __name__ == '__main__':
     run_transfer(model_type='xgboost', trans_epochs=20)
-    run_transfer(model_type='base', trans_epochs=20)
+    # run_transfer(model_type='base', trans_epochs=20)
     # for i in range(20,120,20):
-        # TRANS_EPOCHS = i
-        # run_transfer(model_type='base', trans_epochs=i)
-        # print(i)
+    #     run_transfer(model_type='base', trans_epochs=i)
+    #     print(i)
 i = 9

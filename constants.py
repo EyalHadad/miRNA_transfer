@@ -18,19 +18,21 @@ MODELS_OBJECTS_GRAPHS = "models/graphs"
 MODELS_GRAPHS_HEATMAP = "models/graphs/heatmap"
 MODELS_OUTPUT_PATH = "models/learning_output"
 MODELS_FEATURE_IMPORTANCE = "reports/feature_importance"
+MODELS_ERROR_STATISTICS = "reports/errors/errors_statistics"
+MODELS_WRONG_PREDICTIONS = "reports/errors/wrong_predictions"
 
 TRANSFER_SIZE_LIST = [0, 100, 200, 500, 700]
 # TRANSFER_SIZE_LIST = [0, 100, 200, 500, 700,1500,3000,5000,10000]
 DATASETS = ['cow1', 'worm1', 'worm2', 'human1', 'human2', 'human3', 'mouse1', 'mouse2']
 DATASETS2 = ['worm1', 'worm2', 'human1', 'mouse1']
 SPECIES = ['worm', 'cow', 'human', 'mouse']
-IMPORTANT_FEATURES = ['miRNAPairingCount_Seed_GU', 'miRNAMatchPosition_1','miRNAPairingCount_Total_GU',
-'Energy_MEF_local_target', 'MRNA_Target_G_comp', 'MRNA_Target_GG_comp', 'miRNAMatchPosition_4',
-'miRNAMatchPosition_5','miRNAPairingCount_Seed_bulge_nt','miRNAPairingCount_Seed_GC',
-'miRNAMatchPosition_2','miRNAPairingCount_Seed_mismatch','miRNAPairingCount_X3p_GC',
+IMPORTANT_FEATURES = ['miRNAPairingCount_Seed_GU', 'miRNAMatchPosition_1', 'miRNAPairingCount_Total_GU',
+                      'Energy_MEF_local_target', 'MRNA_Target_G_comp', 'MRNA_Target_GG_comp', 'miRNAMatchPosition_4',
+                      'miRNAMatchPosition_5', 'miRNAPairingCount_Seed_bulge_nt', 'miRNAPairingCount_Seed_GC',
+                      'miRNAMatchPosition_2', 'miRNAPairingCount_Seed_mismatch', 'miRNAPairingCount_X3p_GC',
                       'Seed_match_compact_interactions_all']
 SEQUANCE_FEATURES = ['mRNA_start', 'label', 'mRNA_name',
-                      'target sequence', 'microRNA_name', 'miRNA sequence', 'full_mrna']
+                     'target sequence', 'microRNA_name', 'miRNA sequence', 'full_mrna']
 
 FEATURES_TO_DROP = ['mRNA_start', 'label','mRNA_name','target sequence','microRNA_name','miRNA sequence','full_mrna',
 'canonic_seed','duplex_RNAplex_equals','non_canonic_seed','site_start','num_of_pairs','mRNA_end','constraint']
@@ -39,15 +41,15 @@ MODEL_INPUT_SHAPE = 490
 TRAIN_EPOCHS = 20
 # TRANS_EPOCHS = 10
 XGBS_PARAMS = {
-            "objective": ["binary:hinge"],
-            "booster" : ["gbtree"],
-            "eta" : [0.1],
-            'gamma': [0.5],
-            'max_depth': range(2, 4, 2),
-            'min_child_weight': [1],
-            'subsample': [0.6],
-            'colsample_bytree': [0.6],
-            "lambda" : [1],
-            "n_jobs": [-1],
+    "objective": ["binary:hinge"],
+    "booster": ["gbtree"],
+    "eta": [0.1],
+    'gamma': [0.5],
+    'max_depth': range(2, 4, 2),
+    'min_child_weight': [1],
+    'subsample': [0.6],
+    'colsample_bytree': [0.6],
+    "lambda": [1],
+    "n_jobs": [-1],
 
-        }
+}

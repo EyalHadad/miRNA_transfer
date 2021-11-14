@@ -1,24 +1,10 @@
-from src.models.models_handler import create_sequence
-from src.models.csv_handler import save_metrics
-from sklearn.model_selection import train_test_split
-import matplotlib.pyplot as plt
 import os
 from constants import *
-from time import gmtime, strftime
-from src.models.model_learner import ModelLearner
-from src.models.miRNA_transfer_subclass import miTransfer, api_model
-import numpy as np
-import pandas as pd
+from src.models.miRNA_transfer_subclass import api_model
 import logging
-from keras.layers import Input
 
 logging.getLogger("tensorflow").setLevel(logging.CRITICAL)
-import tensorflow as tf
-from tensorflow.python.keras.models import save_model
-from tensorflow.python.keras.models import load_model
-from src.models.models_handler import save_metrics, create_sequence, create_evaluation_dict
-from keras.optimizers import SGD
-from src.models.Transfer_obj import Transfer_obj
+from src.models.transfer.Transfer_obj import Transfer_obj
 
 
 class BaseTransferObj(Transfer_obj):

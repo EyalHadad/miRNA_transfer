@@ -29,12 +29,10 @@ def create_transfer_graphs(model_list, avg='avg', std='std', is_intra=False):
     std_dict = dict()
     print("loading transfer data results")
     for model in model_list:
-        if not file_exists(model, avg):
-            save_statistic_file(model, avg)
+        save_statistic_file(model, avg)
         f_name = os.path.join(MODELS_STATISTICS_PATH, f"{model}_{avg}.csv")
         graph_dict[model] = pd.read_csv(f_name, index_col=['model']).iloc[:, :-1]
-        if not file_exists(model, std):
-            save_statistic_file(model, std)
+        save_statistic_file(model, std)
         f_name = os.path.join(MODELS_STATISTICS_PATH, f"{model}_{std}.csv")
         std_dict[model] = pd.read_csv(f_name, index_col=['model']).iloc[:, :-1]
 

@@ -1,4 +1,5 @@
 from sklearn.inspection import permutation_importance
+import scikitplot as skplt
 from datetime import datetime
 import matplotlib.pyplot as plt
 import pandas as pd
@@ -115,8 +116,25 @@ class ModelLearner:
         incorrect = total_frame[total_frame["actual"] != total_frame["predicted"]]
         incorrect.to_csv(os.path.join(MODELS_PREDICTION_PATH, f"{model_type}_{self.org_name}_incorrect_{date_time}.csv"),
                          index=False)
+        # self.plot_roc_curve(model_type, pred, y)
 
         # pred_res = pd.DataFrame(zip(pred, y), columns=['pred', 'y'])
         # pred_res.to_csv(os.path.join(MODELS_PREDICTION_PATH, "pred_{0}_{1}.csv".format(model_name, date_time)),
         #                 index=False)
         return model_name, auc
+
+    def plot_roc_curve(self, model_type, pred, y):
+        from sklearn.metrics import roc_curve
+        fpr1, tpr1, thresh1 = roc_curve(y, pred, pos_label=1)
+        random_probs = [0 for i in range(len(y))]
+        p_fpr, p_tpr, _ = roc_curve(y, random_probs, pos_label=1)
+        plt.style.use('seaborn')
+        plt.plot(fpr1, tpr1, linestyle='--', color='orange', label='Model')
+        plt.plot(p_fpr, p_tpr, linestyle='--', color='blue')
+        plt.title('ROC curve')
+        plt.xlabel('False Positive Rate')
+        plt.ylabel('True Positive rate')
+        plt.legend(loc='best')
+        # skplt.metrics.plot_roc_curve(y.to_numpy().reshape(y.shape[0],1), pred)
+        plt.savefig(os.path.join(MODELS_OUTPUT_PATH, f"ROC_{model_type}_{self.org_name}.png"))
+        plt.clf()

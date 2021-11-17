@@ -11,9 +11,8 @@ class XgboostTransferObj(Transfer_obj):
 
     def __init__(self, org_name):
         Transfer_obj.__init__(self, org_name)
-        model_name = os.path.join(MODELS_OBJECTS_PATH, 'Xgboost_{0}.dat'.format(org_name))
+        self.l_model_path = os.path.join(MODELS_OBJECTS_PATH, 'Xgboost_{0}.dat'.format(org_name))
         self.l_model = xgb.XGBClassifier(kwargs=XGBS_PARAMS)  # init model
-        self.l_model.load_model(model_name)
 
     def retrain_model(self, t_size,obj_type,trans_epochs):
         return super(XgboostTransferObj, self).retrain_model(t_size,'xgboost',trans_epochs)

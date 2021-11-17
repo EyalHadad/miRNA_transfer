@@ -1,4 +1,4 @@
-from src.models.models_handler import create_sequence, load_trained_model
+from src.models.models_handler import create_sequence, load_trained_model,create_new_model
 from src.models.csv_handler import save_metrics
 from sklearn.model_selection import train_test_split
 import matplotlib.pyplot as plt
@@ -20,12 +20,15 @@ from src.models.models_handler import save_metrics, create_sequence, create_eval
 from keras.optimizers import SGD
 
 
+
+
 class Transfer_obj:
     feature_names = None
     src_model_name = None
     dst_org_name = None
     transfer_size = None
     l_model = None
+    l_model_path = None
     x = None
     y = None
     x_train = None
@@ -37,6 +40,7 @@ class Transfer_obj:
 
     def __init__(self, org_name):
         self.src_model_name = org_name
+        self.src_org_name = org_name
 
     def load_dst_data(self, dst_org_name):
         self.dst_org_name = dst_org_name
@@ -61,17 +65,15 @@ class Transfer_obj:
         self.x_test = self.x_test.astype("float")
 
     def retrain_model(self, t_size, obj_type, trans_epochs):
-        if t_size != 0:
-            try:
-                x_train_t, x_test_t, y_train_t, y_test_t = train_test_split(self.x, self.y, train_size=t_size,
-                                                                            random_state=42)
-            except:
-                return 0
-            # TODO change second input to sequences - cuz they are not the same shape right now
+        if t_size == 0:
+            if obj_type == 'xgboost':
+                return self.get_previous_xgboost_score()
+        else:
+            x_train_t, x_test_t, y_train_t, y_test_t = train_test_split(self.x, self.y, train_size=t_size,random_state=42)
             if obj_type == 'base':
                 self.l_model.fit(x_train_t, y_train_t, epochs=trans_epochs)
             elif obj_type == 'xgboost':
-                self.l_model.fit(x_train_t, y_train_t, early_stopping_rounds=trans_epochs,
+                self.l_model.fit(x_train_t, y_train_t, early_stopping_rounds=trans_epochs,xgb_model=self.l_model_path,
                                  eval_set=[(x_test_t.iloc[:5, ], y_test_t.iloc[:5, ])])
 
         auc = self.eval_model(t_size, obj_type)
@@ -82,7 +84,7 @@ class Transfer_obj:
             return 0
 
         x_train_t, x_test_t, y_train_t, y_test_t = train_test_split(self.x, self.y, train_size=t_size, random_state=42)
-        model = load_trained_model(obj_type, self.dst_org_name)
+        model = create_new_model(obj_type)
         if obj_type == 'base':
             model.fit(x_train_t, y_train_t, epochs=20)
         elif obj_type == 'xgboost':
@@ -99,3 +101,7 @@ class Transfer_obj:
         m_name = f"{obj_type}_{self.src_model_name}_{str(t_size)}"
         date_time, org_name, auc = create_evaluation_dict(m_name, self.dst_org_name, pred, self.y_test)
         return auc
+
+    def get_previous_xgboost_score(self):
+        data1 = pd.read_csv(os.path.join(MODELS_CROSS_ORG_TABELS, 'xgboost_12_11_2021 15_01_12.csv'), index_col=0)
+        return data1.loc[self.src_org_name][self.dst_org_name]

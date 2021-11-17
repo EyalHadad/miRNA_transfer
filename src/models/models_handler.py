@@ -23,6 +23,14 @@ def load_trained_model(model_type,org_name):
 
     return model
 
+def create_new_model(model_type):
+    if model_type == 'base':
+        model = api_model(MODEL_INPUT_SHAPE)
+        model.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
+    else:
+        model = xgb.XGBClassifier(kwargs=XGBS_PARAMS)  # init model
+    return model
+
 
 def save_pkl_model(model,pkl_filename):
     with open(pkl_filename, 'wb') as file:

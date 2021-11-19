@@ -23,7 +23,7 @@ MODELS_WRONG_PREDICTIONS = "reports/errors/wrong_predictions"
 
 TRANSFER_SIZE_LIST = [0, 100, 200, 500, 700]
 # TRANSFER_SIZE_LIST = [0, 100, 200, 500, 700,1500,3000,5000,10000]
-DATASETS = ['cow1', 'worm1', 'worm2', 'human1', 'human2', 'human3', 'mouse1', 'mouse2']
+DATASETS = ['cow1', 'worm1', 'worm2', 'human1', 'human3', 'mouse1', 'mouse2']
 DATASETS2 = ['worm1', 'worm2', 'human1', 'mouse1']
 SPECIES = ['worm', 'cow', 'human', 'mouse']
 IMPORTANT_FEATURES = ['miRNAPairingCount_Seed_GU', 'miRNAMatchPosition_1', 'miRNAPairingCount_Total_GU',
@@ -53,3 +53,5 @@ XGBS_PARAMS = {
     "n_jobs": [-1],
 
 }
+
+METRIC = 'ACC'

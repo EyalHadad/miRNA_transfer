@@ -32,6 +32,7 @@ class ModelLearner:
 
     def prep_model_training(self):
         train = pd.read_csv(os.path.join(PROCESSED_TRAIN_PATH, "{0}_train.csv".format(self.org_name)), index_col=False)
+        # train = train.iloc[:500, :]
         print("---Train data was loaded---\n")
         print("training data shape:", train.shape)
         train['sequence'] = train.apply(lambda x: create_sequence(x['miRNA sequence'], x['target sequence']), axis=1)
@@ -108,14 +109,18 @@ class ModelLearner:
         if self.model is None:
             self.model = load_trained_model(model_type, self.org_name)
 
-        pred = self.model.predict(x)
+        if model_type == 'base':
+            pred = self.model.predict(x)
+        else:
+            pred = self.model.predict_proba(x)[:,1]
         date_time, model_name, auc = create_evaluation_dict(self.model_name, self.org_name, pred, y)
-        total_frame = x
-        total_frame["actual"] = y
-        total_frame["predicted"] = np.round(pred)
-        incorrect = total_frame[total_frame["actual"] != total_frame["predicted"]]
-        incorrect.to_csv(os.path.join(MODELS_PREDICTION_PATH, f"{model_type}_{self.org_name}_incorrect_{date_time}.csv"),
-                         index=False)
+        # total_frame = x
+        # total_frame["actual"] = y
+        # total_frame["predicted"] = np.round(pred)
+        # incorrect = total_frame[total_frame["actual"] != total_frame["predicted"]]
+        # incorrect.to_csv(
+        #     os.path.join(MODELS_PREDICTION_PATH, f"{model_type}_{self.org_name}_incorrect_{date_time}.csv"),
+        #     index=False)
         # self.plot_roc_curve(model_type, pred, y)
 
         # pred_res = pd.DataFrame(zip(pred, y), columns=['pred', 'y'])

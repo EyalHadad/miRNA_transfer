@@ -18,7 +18,7 @@ def run_training(model_type='base'):
         else:
             print("No such model type")
             return
-        # train_obj.train_model()
+        train_obj.train_model()
         # train_obj.model_explain()
         model_name,auc = train_obj.evaluate_model(model_type)
         intra_dataset_res_dict[model_name] = auc
@@ -28,3 +28,4 @@ def run_training(model_type='base'):
 
 if __name__ == '__main__':
     run_training('xgboost')
+    run_training('base')

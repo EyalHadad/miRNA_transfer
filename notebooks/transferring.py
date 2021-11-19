@@ -10,6 +10,7 @@ def run_transfer(model_type='base', trans_epochs=20):
     transfer_dict = {}
     vanilla_model_dict = {}
     transfer_size = TRANSFER_SIZE_LIST
+    transfer_size = [0]
     for org_name in dataset_list:
         rest = copy.deepcopy(DATASETS)
         rest.remove(org_name)
@@ -36,8 +37,8 @@ def run_transfer(model_type='base', trans_epochs=20):
 
 
 if __name__ == '__main__':
+    run_transfer(model_type='base', trans_epochs=20)
     run_transfer(model_type='xgboost', trans_epochs=20)
-    # run_transfer(model_type='base', trans_epochs=20)
     # for i in range(20,120,20):
     #     run_transfer(model_type='base', trans_epochs=i)
     #     print(i)

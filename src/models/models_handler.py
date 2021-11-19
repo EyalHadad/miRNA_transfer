@@ -64,7 +64,7 @@ def create_evaluation_dict(t_model_name, org_name, pred, y):
     eval_dict['MCC'] = metrics.matthews_corrcoef(y, np.round(pred))
     eval_dict['F1_score'] = metrics.f1_score(y, np.round(pred))
     save_metrics(eval_dict)
-    return date_time, org_name, eval_dict['AUC']
+    return date_time, org_name, eval_dict[METRIC]
 
 
 def create_res_graph(tabel_dict,org_name,model_type,trans_epochs):

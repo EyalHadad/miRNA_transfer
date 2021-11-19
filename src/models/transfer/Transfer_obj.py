@@ -18,6 +18,7 @@ from tensorflow.python.keras.models import save_model
 from tensorflow.python.keras.models import load_model
 from src.models.models_handler import save_metrics, create_sequence, create_evaluation_dict
 from keras.optimizers import SGD
+import xgboost as xgb
 
 
 
@@ -67,12 +68,15 @@ class Transfer_obj:
     def retrain_model(self, t_size, obj_type, trans_epochs):
         if t_size == 0:
             if obj_type == 'xgboost':
-                return self.get_previous_xgboost_score()
+                self.l_model = xgb.XGBClassifier(kwargs=XGBS_PARAMS)  # init model
+                self.l_model.load_model(self.l_model_path)
+
         else:
             x_train_t, x_test_t, y_train_t, y_test_t = train_test_split(self.x, self.y, train_size=t_size,random_state=42)
             if obj_type == 'base':
                 self.l_model.fit(x_train_t, y_train_t, epochs=trans_epochs)
             elif obj_type == 'xgboost':
+                self.l_model = xgb.XGBClassifier(kwargs=XGBS_PARAMS)  # init model
                 self.l_model.fit(x_train_t, y_train_t, early_stopping_rounds=trans_epochs,xgb_model=self.l_model_path,
                                  eval_set=[(x_test_t.iloc[:5, ], y_test_t.iloc[:5, ])])
 
@@ -97,11 +101,22 @@ class Transfer_obj:
 
     def eval_model(self, t_size, obj_type):
         print("Evaluate model")
-        pred = self.l_model.predict(self.x_test)
+        if obj_type=='base':
+            pred = self.l_model.predict(self.x_test)
+        else:
+            pred = self.l_model.predict_proba(self.x_test)[:,1]
         m_name = f"{obj_type}_{self.src_model_name}_{str(t_size)}"
         date_time, org_name, auc = create_evaluation_dict(m_name, self.dst_org_name, pred, self.y_test)
+        # if t_size==0:
+        #     total_frame = self.x_test
+        #     total_frame["actual"] = self.y_test
+        #     total_frame["predicted"] = np.round(pred)
+        #     incorrect = total_frame[total_frame["actual"] != total_frame["predicted"]]
+        #     incorrect.to_csv(
+        #         os.path.join(MODELS_PREDICTION_PATH, f"{obj_type}_{self.src_org_name}_{self.dst_org_name}_incorrect.csv"),
+        #         index=False)
         return auc
 
     def get_previous_xgboost_score(self):
-        data1 = pd.read_csv(os.path.join(MODELS_CROSS_ORG_TABELS, 'xgboost_12_11_2021 15_01_12.csv'), index_col=0)
+        data1 = pd.read_csv(os.path.join(MODELS_CROSS_ORG_TABELS, 'xgboost_17_11_2021 23_26_27.csv'), index_col=0)
         return data1.loc[self.src_org_name][self.dst_org_name]

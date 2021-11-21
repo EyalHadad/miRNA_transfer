@@ -10,7 +10,6 @@ def run_transfer(model_type='base', trans_epochs=20):
     transfer_dict = {}
     vanilla_model_dict = {}
     transfer_size = TRANSFER_SIZE_LIST
-    transfer_size = [0]
     for org_name in dataset_list:
         rest = copy.deepcopy(DATASETS)
         rest.remove(org_name)

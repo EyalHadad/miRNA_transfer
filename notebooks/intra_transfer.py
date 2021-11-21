@@ -6,7 +6,7 @@ import copy
 
 
 def run_intra_transfer(model_type='base', trans_epochs=20):
-    dataset_dict = {'human':['human1','human2','human3'],
+    dataset_dict = {'human':['human1','human3'],
                     'worm':['worm1','worm2'],'mouse':['mouse1','mouse2']}
     transfer_dict = {}
     vanilla_model_dict = {}

@@ -107,14 +107,15 @@ class Transfer_obj:
             pred = self.l_model.predict_proba(self.x_test)[:,1]
         m_name = f"{obj_type}_{self.src_model_name}_{str(t_size)}"
         date_time, org_name, auc = create_evaluation_dict(m_name, self.dst_org_name, pred, self.y_test)
-        # if t_size==0:
-        #     total_frame = self.x_test
-        #     total_frame["actual"] = self.y_test
-        #     total_frame["predicted"] = np.round(pred)
-        #     incorrect = total_frame[total_frame["actual"] != total_frame["predicted"]]
-        #     incorrect.to_csv(
-        #         os.path.join(MODELS_PREDICTION_PATH, f"{obj_type}_{self.src_org_name}_{self.dst_org_name}_incorrect.csv"),
-        #         index=False)
+        if t_size==0:
+            total_frame = self.x_test.copy()
+            total_frame["index"] = self.x_test.index
+            total_frame["actual"] = self.y_test
+            total_frame["predicted"] = np.round(pred)
+            incorrect = total_frame[total_frame["actual"] != total_frame["predicted"]]
+            incorrect.to_csv(
+                os.path.join(MODELS_PREDICTION_PATH, f"{obj_type}_{self.src_org_name}_{self.dst_org_name}_incorrect.csv"),
+                index=False)
         return auc
 
     def get_previous_xgboost_score(self):

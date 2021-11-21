@@ -1,10 +1,12 @@
-from src.analytics.analytics import create_error_datasets, analysis_error_datasets
-from src.visualization.graphs_handler import create_intra_transfer_graphs
+from src.analytics.analytics import model_diff,dataset_diff
 
 
 def run_error_analysis():
-    # create_error_datasets(target_dataset='worm1')
-    analysis_error_datasets(target_dataset='worm1')
+    dataset_diff('cow1','human3')
+    # dataset_diff('mouse2','worm1')
+    # model_diff('mouse1', 'worm1')
+    # model_diff('mouse2', 'cow1')
+
 
 
 

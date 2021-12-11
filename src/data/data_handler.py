@@ -79,3 +79,38 @@ def create_train_dataset(org_name, remove_hot_paring,only_most_important,dist_sp
     test.to_csv(os.path.join(PROCESSED_TEST_PATH, "{0}_test.csv".format(org_name)), index=False)
     print("---Test dataset was created---\n")
     i = 8
+
+
+def create_all_against_one_data(excloude=None):
+    data_sets = DATASETS.copy()
+    if excloude is not None:
+        data_sets = data_sets.remove(excloude)
+    organism = SPECIES.copy()
+    for org in organism:
+        print(f"---Creating {org} train datasets---")
+        train_data_list = None
+        test_data_list = None
+        train_dataset_names = [x for x in data_sets if org not in x]
+        test_dataset_names = [x for x in data_sets if org in x]
+        for train_data in train_dataset_names:
+            csv_data = pd.read_csv(os.path.join(PROCESSED_TRAIN_PATH, f"{train_data}_train.csv"))
+            print(f"---load {train_data} train datasets with shape: {csv_data.shape}---")
+            if train_data_list is None:
+                train_data_list = csv_data
+            else:
+                train_data_list=train_data_list.append(csv_data)
+        print(f"---Writing {org} train dataset with total shape of:{train_data_list.shape}---")
+        train_data_list=train_data_list.sample(frac=1).reset_index(drop=True)
+        train_data_list.to_csv(os.path.join(PROCESSED_ALL_AGAINST_PATH,f"{org}_train.csv"), index=False)
+
+        for test_data in test_dataset_names:
+            csv_data = pd.read_csv(os.path.join(PROCESSED_TEST_PATH, f"{test_data}_test.csv"))
+            print(f"---load {test_data} test datasets with shape: {csv_data.shape}---")
+            if test_data_list is None:
+                test_data_list = csv_data
+            else:
+                test_data_list=test_data_list.append(csv_data)
+        print(f"---Writing {org} test dataset with total shape of:{test_data_list.shape}---")
+        test_data_list = test_data_list.sample(frac=1).reset_index(drop=True)
+        test_data_list.to_csv(os.path.join(PROCESSED_ALL_AGAINST_PATH,f"{org}_test.csv"), index=False)
+

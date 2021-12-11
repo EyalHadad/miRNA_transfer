@@ -13,13 +13,16 @@ class XgboostTrainObj(ModelLearner):
         ModelLearner.__init__(self,org_name,m_name)
 
 
-    def train_model(self):
-        super().prep_model_training()
+    def train_model(self,aa1=False):
+        super().prep_model_training(aa1)
         print("---Start training {0} on {1}---\n".format(self.model_name,self.org_name))
         self.model = xgb.XGBClassifier(kwargs=XGBS_PARAMS).fit(self.x, self.y, eval_metric=["error", "logloss"], eval_set=[(self.xval, self.yval)])
         print("---Learning Curves---\n")
         # self.plot_learning_curves()
-        model_name = os.path.join(MODELS_OBJECTS_PATH, '{0}_{1}.dat'.format(self.model_name,self.org_name))
+        if aa1:
+            model_name = os.path.join(MODELS_OBJECTS_PATH, 'aa1_{0}_{1}.dat'.format(self.model_name,self.org_name))
+        else:
+            model_name = os.path.join(MODELS_OBJECTS_PATH, '{0}_{1}.dat'.format(self.model_name,self.org_name))
         self.model.save_model(model_name)
         print("---{0} model saved---\n".format(self.model_name))
 

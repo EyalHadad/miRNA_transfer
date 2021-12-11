@@ -43,11 +43,17 @@ class Transfer_obj:
         self.src_model_name = org_name
         self.src_org_name = org_name
 
-    def load_dst_data(self, dst_org_name):
+    def load_dst_data(self, dst_org_name,aa1=False):
         self.dst_org_name = dst_org_name
-        train = pd.read_csv(os.path.join(PROCESSED_TRAIN_PATH, "{0}_train.csv".format(self.dst_org_name)),
-                            index_col=False)
-        test = pd.read_csv(os.path.join(PROCESSED_TEST_PATH, "{0}_test.csv".format(self.dst_org_name)), index_col=False)
+        if aa1:
+            train = pd.read_csv(os.path.join(PROCESSED_ALL_AGAINST_PATH, "{0}_train.csv".format(self.dst_org_name)),
+                                index_col=False)
+            test = pd.read_csv(os.path.join(PROCESSED_ALL_AGAINST_PATH, "{0}_test.csv".format(self.dst_org_name)), index_col=False)
+        else:
+            train = pd.read_csv(os.path.join(PROCESSED_TRAIN_PATH, "{0}_train.csv".format(self.dst_org_name)),
+                                index_col=False)
+            test = pd.read_csv(os.path.join(PROCESSED_TEST_PATH, "{0}_test.csv".format(self.dst_org_name)),
+                               index_col=False)
         print("---Data was loaded---\n")
         print("Train data shape:", train.shape)
         print("Test data shape:", test.shape)
@@ -65,7 +71,7 @@ class Transfer_obj:
         self.x_test = X_test.drop('sequence', 1).fillna(0)
         self.x_test = self.x_test.astype("float")
 
-    def retrain_model(self, t_size, obj_type, trans_epochs):
+    def retrain_model(self, t_size, obj_type, trans_epochs,aa1=False):
         if t_size == 0:
             if obj_type == 'xgboost':
                 self.l_model = xgb.XGBClassifier(kwargs=XGBS_PARAMS)  # init model

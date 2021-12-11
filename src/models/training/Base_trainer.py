@@ -19,8 +19,8 @@ class BaseTrainObj(ModelLearner):
     def __init__(self, org_name, m_name):
         ModelLearner.__init__(self, org_name, m_name)
 
-    def train_model(self):
-        super().prep_model_training()
+    def train_model(self, aa1=False):
+        super().prep_model_training(aa1)
         print("---Start training {0} on {1}---\n".format(self.model_name, self.org_name))
         print(f"ann input {self.x.shape}, cnn input {self.sequences.shape}")
         self.model = api_model(self.x.shape[-1],)
@@ -29,9 +29,13 @@ class BaseTrainObj(ModelLearner):
         # print(self.model.summary())
         print("---Learning Curves---\n")
         self.plot_learning_curves()
-        model_name = os.path.join(MODELS_OBJECTS_PATH,f"{self.org_name}/")
         print("---Saving model---\n")
-        self.model.save_weights(model_name)
+        if aa1:
+            model_name = os.path.join(MODELS_OBJECTS_PATH,f"aa1_{self.org_name}/")
+            self.model.save_weights(model_name)
+        else:
+            model_name = os.path.join(MODELS_OBJECTS_PATH,f"{self.org_name}/")
+            self.model.save_weights(model_name)
         print("---{0} model saved---\n".format(self.model_name))
 
     def plot_learning_curves(self):

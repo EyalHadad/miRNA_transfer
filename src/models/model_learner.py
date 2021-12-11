@@ -30,9 +30,12 @@ class ModelLearner:
         self.org_name = org_name
         self.model_name = m_name
 
-    def prep_model_training(self):
-        train = pd.read_csv(os.path.join(PROCESSED_TRAIN_PATH, "{0}_train.csv".format(self.org_name)), index_col=False)
-        train = train.iloc[:500, :]
+    def prep_model_training(self, aa1=False):
+        if aa1:
+            train = pd.read_csv(os.path.join(PROCESSED_ALL_AGAINST_PATH, "{0}_train.csv".format(self.org_name)), index_col=False)
+        else:
+            train = pd.read_csv(os.path.join(PROCESSED_TRAIN_PATH, "{0}_train.csv".format(self.org_name)), index_col=False)
+        # train = train.iloc[:500, :]
         print("---Train data was loaded---\n")
         print("training data shape:", train.shape)
         train['sequence'] = train.apply(lambda x: create_sequence(x['miRNA sequence'], x['target sequence']), axis=1)
@@ -98,8 +101,11 @@ class ModelLearner:
         plt.savefig(os.path.join(MODELS_FEATURE_IMPORTANCE, '{0}_bar.png'.format(title)))
         plt.clf()
 
-    def evaluate_model(self, model_type):
-        test = pd.read_csv(os.path.join(PROCESSED_TEST_PATH, "{0}_test.csv".format(self.org_name)), index_col=False)
+    def evaluate_model(self, model_type,aa1=False):
+        if aa1:
+            test = pd.read_csv(os.path.join(PROCESSED_ALL_AGAINST_PATH, "{0}_test.csv".format(self.org_name)), index_col=False)
+        else:
+            test = pd.read_csv(os.path.join(PROCESSED_TEST_PATH, "{0}_test.csv".format(self.org_name)), index_col=False)
         print("---Test data was loaded---\n")
         test['sequence'] = test.apply(lambda x: create_sequence(x['miRNA sequence'], x['target sequence']), axis=1)
         y = test['label']
@@ -114,14 +120,14 @@ class ModelLearner:
         else:
             pred = self.model.predict_proba(x)[:,1]
         date_time, model_name, auc = create_evaluation_dict(self.model_name, self.org_name, pred, y)
-        total_frame = x.copy()
-        total_frame["index"] = x.index
-        total_frame["actual"] = y
-        total_frame["predicted"] = np.round(pred)
-        incorrect = total_frame[total_frame["actual"] != total_frame["predicted"]]
-        incorrect.to_csv(
-            os.path.join(MODELS_PREDICTION_PATH, f"{model_type}_{self.org_name}_crossvalid_incorrect.csv"),
-            index=False)
+        # total_frame = x.copy()
+        # total_frame["index"] = x.index
+        # total_frame["actual"] = y
+        # total_frame["predicted"] = np.round(pred)
+        # incorrect = total_frame[total_frame["actual"] != total_frame["predicted"]]
+        # incorrect.to_csv(
+        #     os.path.join(MODELS_PREDICTION_PATH, f"{model_type}_{self.org_name}_crossvalid_incorrect.csv"),
+        #     index=False)
         # self.plot_roc_curve(model_type, pred, y)
 
         # pred_res = pd.DataFrame(zip(pred, y), columns=['pred', 'y'])

@@ -8,11 +8,15 @@ from src.visualization.visualization_handler import save_statistic_file, file_ex
 from collections import defaultdict
 
 
-def create_intra_transfer_graphs(model_list):
+def create_intra_transfer_graphs(model_list,aa1=False):
+    model_list = [f"aa1_{x}" for x in model_list]
     graph_dict = dict()
     print("loading transfer data results")
     for model in model_list:
         f_path = os.path.join(MODELS_INTRA_TRANSFER_TABLES, f"{model}_transfer.csv")
+        if aa1:
+            f_path = os.path.join(MODELS_OBJECTS_TRANSFER_TABLES, f"{model}_transfer.csv")
+
         graph_dict[model] = pd.read_csv(f_path, index_col=['src_org', 'dst_org']).iloc[:, :-1]
 
     print("Drawing transfer graphs")

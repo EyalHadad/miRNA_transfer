@@ -1,3 +1,4 @@
+from abc import ABC, abstractmethod
 from sklearn.inspection import permutation_importance
 import scikitplot as skplt
 from datetime import datetime
@@ -77,9 +78,12 @@ class ModelLearner:
 
     def model_explain(self):
         print("Shap values\n")
-        explainer = shap.DeepExplainer(self.model, self.x.values.astype('float'))
-        shap_values = explainer.shap_values(self.xval.iloc[1:5, ].values)
-        shap.summary_plot(shap_values, feature_names=self.xval.iloc[1:5, ].columns, plot_type="bar", show=False,
+        if self.model_name == 'base':
+            explainer = shap.DeepExplainer(self.model, self.x.values.astype('float'))
+        else:
+            explainer = shap.TreeExplainer(self.model, self.x.values.astype('float'))
+        shap_values = explainer.shap_values(self.xval.values)
+        shap.summary_plot(shap_values, feature_names=self.xval.columns, show=False,
                           max_display=10, plot_size=(20, 20))
         plt.title('{0} {1} SHAP bar'.format(self.model_name, self.org_name))
         plt.savefig(os.path.join(MODELS_FEATURE_IMPORTANCE, '{0}_{1}_bar.png'.format(self.model_name, self.org_name)))
@@ -120,6 +124,7 @@ class ModelLearner:
         else:
             pred = self.model.predict_proba(x)[:,1]
         date_time, model_name, auc = create_evaluation_dict(self.model_name, self.org_name, pred, y)
+
         # total_frame = x.copy()
         # total_frame["index"] = x.index
         # total_frame["actual"] = y
@@ -150,3 +155,8 @@ class ModelLearner:
         # skplt.metrics.plot_roc_curve(y.to_numpy().reshape(y.shape[0],1), pred)
         plt.savefig(os.path.join(MODELS_OUTPUT_PATH, f"ROC_{model_type}_{self.org_name}.png"))
         plt.clf()
+
+
+@abstractmethod
+def get_shap_values():
+    raise NotImplementedError("Must override get_shap_values method")

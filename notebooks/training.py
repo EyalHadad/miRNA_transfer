@@ -8,8 +8,8 @@ from src.data.data_handler import *
 
 def run_training(model_type='base'):
     intra_dataset_res_dict = {}
-    dataset_list = DATASETS
-    # dataset_list = ['worm1']
+    # dataset_list = DATASETS
+    dataset_list = ['worm1']
     for data in dataset_list:
         if model_type == 'base':
             train_obj = BaseTrainObj(data, 'Base')

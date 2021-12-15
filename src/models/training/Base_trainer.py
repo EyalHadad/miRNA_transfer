@@ -63,3 +63,6 @@ class BaseTrainObj(ModelLearner):
         print("---Explain model---\n")
         super().model_explain()
 
+    def get_shap_values(self):
+        import shap
+        shap_values = shap.TreeExplainer(self.model).shap_values(X_train)

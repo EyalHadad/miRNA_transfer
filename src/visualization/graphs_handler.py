@@ -1,3 +1,4 @@
+import numpy as np
 import os
 import pandas as pd
 import seaborn as sns
@@ -9,7 +10,7 @@ from collections import defaultdict
 
 
 def create_intra_transfer_graphs(model_list,aa1=False):
-    model_list = [f"aa1_{x}" for x in model_list]
+    # model_list = [f"aa1_{x}" for x in model_list]
     graph_dict = dict()
     print("loading transfer data results")
     for model in model_list:
@@ -33,7 +34,7 @@ def create_transfer_graphs(model_list, avg='avg', std='std', is_intra=False):
     std_dict = dict()
     print("loading transfer data results")
     for model in model_list:
-        data = pd.read_csv(os.path.join(MODELS_OBJECTS_TRANSFER_TABLES, f"{model}_transfer.csv"))
+        # data = pd.read_csv(os.path.join(MODELS_OBJECTS_TRANSFER_TABLES, f"{model}_transfer.csv"))
         save_statistic_file(model, avg)
         f_name = os.path.join(MODELS_STATISTICS_PATH, f"{model}_{avg}.csv")
         graph_dict[model] = pd.read_csv(f_name, index_col=['model']).iloc[:, :-1]
@@ -56,12 +57,14 @@ def draw_transfer_graph(data, org_names, std_dict):
     offset_dict = {'base_20': 5, 'xgboost_20': -10}
     offset_dict = defaultdict(lambda: -10, offset_dict)
     ax = sns.lineplot(data=data.T, dashes=False, linewidth=2.5)
+    ax.set(yticks=np.linspace(0,1,11))
     ax.legend(labels)
     if std_dict is not None:
         annotate_graph(ax, data, offset_dict, org_names, std_dict)
     plt.title(f"{org_names}", fontsize=15)
     plt.xlabel('#Target observations', fontsize=10)
     plt.ylabel('AUC', fontsize=10)
+    plt.legend(loc='lower right')
     ax.title.set_color('purple')
     ax.figure.tight_layout()
     plt.savefig(os.path.join(MODELS_OBJECTS_GRAPHS, f"{org_names}.png"))

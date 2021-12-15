@@ -50,7 +50,7 @@ class XgboostTrainObj(ModelLearner):
 
     def model_explain(self):
         print("---Explain model---\n")
-        self.feature_importance()
+        # self.feature_importance()
         super().model_explain()
 
 

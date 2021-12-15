@@ -3,6 +3,9 @@ from src.data.data_handler import *
 from scipy.stats import ks_2samp
 import seaborn as sns
 import matplotlib.pyplot as plt
+import copy
+import shap
+
 
 def create_error_file(org_name, target_dataset, x, y):
     for model_type in ['base', 'xgboost']:
@@ -71,14 +74,16 @@ def create_wrong_dict(csv_files):
     return wrong_pred_dict
 
 
-def find_most_distinguish_cols(f_1,f_2,n=1):
+def find_most_distinguish_cols(df1,df2,n=1,df_col=None,return_all=False):
     distinguish_list = []
-    df1 = pd.read_csv(f_1).drop(FEATURES_TO_DROP, axis=1)
-    df2 = pd.read_csv(f_2).drop(FEATURES_TO_DROP, axis=1)
-    for c in df1:
+    if df_col is None:
+        df_col = df1.columns
+    for c in df_col:
         res = ks_2samp(df1[c], df2[c])
         distinguish_list.append([c,res.statistic,res.pvalue])
     distinguish_list.sort(key=lambda tup: tup[2])
+    if return_all:
+        return distinguish_list
     return [x[0] for x in distinguish_list[0:n]]
 
 
@@ -112,20 +117,74 @@ def model_diff(s_org,d_org):
         plot_distinguish_cols(nn_path,xg_path, c, s_org, d_org)
 
 
-def dataset_diff(s_org,d_org ):
-    s_file_path = os.path.join(PROCESSED_TEST_PATH, "{0}_test.csv".format(d_org))
-    d_data = pd.read_csv(s_file_path, index_col=False)
-    d_data = d_data.drop(FEATURES_TO_DROP, axis=1)
-    d_file_path = os.path.join(PROCESSED_TRAIN_PATH, "{0}_train.csv".format(s_org))
-    s_data = pd.read_csv(d_file_path, index_col=False)
-    s_data = s_data.drop(FEATURES_TO_DROP, axis=1)
-    # col_names = find_most_distinguish_cols(s_file_path, d_file_path)
-    col_names = ['Energy_MEF_local_target']
-    d_data.loc[:, 'dataset'] = f"{d_org}_test_distribution"
-    s_data.loc[:, 'dataset'] = f"{s_org}_train_distribution"
-    new_data = d_data.append(s_data)
+def dataset_diff():
+    dataset_list = copy.deepcopy(DATASETS)
+    for src_org_name in dataset_list:
+        train = pd.read_csv(os.path.join(PROCESSED_TRAIN_PATH, "{0}_train.csv".format(src_org_name)),
+                           index_col=False)
+        train = train.drop(FEATURES_TO_DROP, axis=1)
+        rest = copy.deepcopy(DATASETS)
+        rest.remove(src_org_name)
+        for dst_org_name in rest:
+            test = pd.read_csv(os.path.join(PROCESSED_TEST_PATH, "{0}_test.csv".format(dst_org_name)),
+                               index_col=False)
+            test = test.drop(FEATURES_TO_DROP, axis=1)
+            col_names = find_most_distinguish_cols(train, test,n=10)
+            update_dataset_diff_file(col_names, src_org_name,dst_org_name,'datasets_diff_features.csv',map(str, range(11)))
+
+            # draw_dataste_feature_diff(train,test,[col_names[0]], src_org_name, dst_org_name)
+
+
+def draw_dataste_feature_diff(train,test,col_names, src_org, dst_org):
+    src_data = train.copy()
+    dst_data = test.copy()
+    src_data.loc[:, 'dataset'] = f"{src_org}_train_distribution"
+    dst_data.loc[:, 'dataset'] = f"{dst_org}_test_distribution"
+    all_data = src_data.append(dst_data)
     for c in col_names:
         sns.set_theme(style="darkgrid")
-        sns.displot(data=new_data, x=c, hue='dataset', kind="kde")
-        plt.savefig(os.path.join(MODELS_ERROR_STATISTICS, f"{s_org}_{d_org}_dataset_diff.png"))
+        sns.displot(data=all_data, x=c, hue='dataset', kind="kde")
+        plt.savefig(os.path.join(MODELS_FEATURE_DIFF, f"{src_org}_{dst_org}_{col_names[0]}_dataset_diff.png"))
         plt.clf()
+
+
+def update_dataset_diff_file(col_names, src_org, dst_org, output_f_name, file_col):
+    f_path = os.path.join(MODELS_FEATURE_IMPORTANCE, output_f_name)
+    with open(f_path, 'a') as file:
+        if file.tell() == 0:
+            file.write("src,dst," + ','.join(file_col) + "\n")
+        row_list = [src_org, dst_org] + col_names + ['\n']
+        file.write(",".join(row_list))
+
+
+def create_shap_global_plots():
+    dataset_list = copy.deepcopy(DATASETS)
+    for src_org_name in dataset_list:
+        xgb_model = load_trained_model("xgboost", src_org_name)
+        base_model = load_trained_model("base", src_org_name)
+        rest = copy.deepcopy(DATASETS)
+        rest.remove(src_org_name)
+        for dst_org_name in rest:
+            test = pd.read_csv(os.path.join(PROCESSED_TEST_PATH, "{0}_test.csv".format(dst_org_name)),
+                                index_col=False)
+            test = test.drop(FEATURES_TO_DROP, axis=1)
+            model_shap_plot(test, xgb_model,'xgboost',src_org_name,dst_org_name,'Energy_MEF_Duplex')
+            model_shap_plot(test, base_model,'base',src_org_name,dst_org_name,'Energy_MEF_Duplex')
+
+
+def model_shap_plot(data, model, model_name,s_org,d_org,dependence_feature=None):
+    if model_name == 'base':
+        shap_values = shap.DeepExplainer(model, data.values.astype('float')).shap_values(data.values.astype('float'))[0]
+    else:
+        shap_values = shap.TreeExplainer(model).shap_values(data.values.astype('float'))
+    shap.summary_plot(shap_values, data,show=False,max_display=10,feature_names=data.columns)
+    plt.title(f"{model_name}_{s_org}_{d_org}_summary_plot")
+    plt.savefig(os.path.join(MODELS_FEATURE_SUMMARY, f"{model_name}_{s_org}_{d_org}_summary_plot.png"), bbox_inches='tight')
+    plt.clf()
+    if dependence_feature is not None:
+        shap.dependence_plot(dependence_feature, shap_values, data,show=False)
+        plt.title(f"{model_name}_{s_org}_{d_org}_dependence_plot")
+        plt.savefig(os.path.join(MODELS_FEATURE_DEPENDENCE, f"{model_name}_{s_org}_{d_org}_dependence_plot.png"),
+                    bbox_inches='tight')
+        plt.clf()
+

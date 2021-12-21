@@ -13,7 +13,7 @@ def get_important_features(datasets_tuple, n=5):
     dataset_diff_file = pd.read_csv(f_path)
     file_line = dataset_diff_file[
                     (dataset_diff_file['src'] == datasets_tuple[0]) & (
-                                dataset_diff_file['dst'] == datasets_tuple[1])].iloc[0, :]
+                            dataset_diff_file['dst'] == datasets_tuple[1])].iloc[0, :]
     col_names = [str(x) for x in range(n + 1)]
     important_deatures = [file_line[x] for x in col_names]
     return important_deatures
@@ -35,28 +35,36 @@ def create_imp_features_file(dataset_list, imp_features):
 
 def draw_dataset_feature_importance_lineplot():
     f_path = os.path.join(MODELS_FEATURE_IMPORTANCE, 'datasets_diff_features_lineplot.csv')
-    data = pd.read_csv(f_path, index_col=False)
-    data = data.iloc[[0, 10, 20, 30, 40, 48], :]
-    data.drop(['src', 'dst'], axis=1, inplace=True)
-    plt.clf()
-    sns.set_theme(style="whitegrid")
-    ax = sns.lineplot(data=data, linewidth=2.5)
-    plt.title('Features correlations between datasets', fontsize=15)
-    ax.title.set_color('purple')
-    plt.legend(title='Features', loc='upper left')
-    plt.setp(ax.get_legend().get_texts(), fontsize='8')  # for legend text
-    # plt.show()
-    plt.savefig(os.path.join(MODELS_FEATURE_IMPORTANCE, 'Features correlations between datasets.png'))
-    i=9
+    org_data = pd.read_csv(f_path, index_col=False)
+    for d in DATASETS:
+        for f in ['src','dst']:
+            data = org_data.copy()
+            data = data[data[f] == d]
+            # data = data.iloc[[0, 10, 20, 30, 40, 48], :]
+            # data = data.iloc[[0, 10, 18, 28, 38, 43], :]
+            data.drop(['src', 'dst'], axis=1, inplace=True)
+            plt.clf()
+            sns.set_theme(style="whitegrid")
+            ax = sns.lineplot(data=data, linewidth=2.5)
+            plt.title('Features correlations between datasets', fontsize=15)
+            plt.xlabel("Sorted models by AAC (0 is the lowest)", fontsize=13)
+            plt.ylabel("Correlation", fontsize=13)
+            ax.title.set_color('purple')
+            plt.legend(title='Features', loc='upper left')
+            plt.setp(ax.get_legend().get_texts(), fontsize='8')  # for legend text
+            # plt.show()
+            plt.savefig(os.path.join(MODELS_FEATURE_IMPORTANCE, f"Features correlations between datasets_{d}_{f}.png"))
+
 
 def create_datasets_features_importance_file(f_names):
     data1 = pd.read_csv(os.path.join(MODELS_CROSS_ORG_TABELS, f_names['miRNA_Net']), index_col=0)
     data2 = pd.read_csv(os.path.join(MODELS_CROSS_ORG_TABELS, f_names['xgboost']), index_col=0)
     avg_dataset_dict = [data1 + data2][0].div(2).stack().to_dict()
     dataset_list = [(k, v) for k, v in sorted(avg_dataset_dict.items(), key=lambda item: item[1])]
-    imp_features = get_important_features(dataset_list[0][0])
-    create_imp_features_file(dataset_list, imp_features)
-
+    cross_org_dataset_list = [t for t in dataset_list if t[0][0][:-1] != t[0][1][:-1]]
+    # imp_features = get_important_features(dataset_list[0][0])
+    imp_features = GOOD_MODEL_SHAP_FEATURES
+    create_imp_features_file(cross_org_dataset_list, imp_features)
 
 
 def create_heatmaps(f_names):

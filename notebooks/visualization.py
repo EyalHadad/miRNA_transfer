@@ -6,7 +6,7 @@ from src.visualization.visualization_handler import *
 def run_visualization():
     # cross_org_tables = {'miRNA_Net': r"base_11_11_2021 16_18_16.csv", 'xgboost': r"xgboost_11_11_2021 15_57_33.csv"}
     # TODO change loading tables
-    cross_org_tables = {'miRNA_Net': r"base_19_11_2021 13_17_00.csv", 'xgboost': r"xgboost_19_11_2021 13_21_59.csv"}
+    cross_org_tables = {'miRNA_Net': r"base.csv", 'xgboost': r"xgboost.csv"}
     # create_heatmaps(cross_org_tables)
     # create_datasets_features_importance_file(cross_org_tables)
     draw_dataset_feature_importance_lineplot()

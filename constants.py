@@ -58,5 +58,6 @@ XGBS_PARAMS = {
     "n_jobs": [-1],
 
 }
-
+GOOD_MODEL_SHAP_FEATURES = ['Energy_MEF_local_target', 'Energy_MEF_Duplex', 'miRNAMatchPosition_1',
+                     'miRNAMatchPosition_9', 'miRNAPairingCount_Total_GU']
 METRIC = 'ACC'

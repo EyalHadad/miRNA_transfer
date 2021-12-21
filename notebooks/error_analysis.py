@@ -2,7 +2,7 @@ from src.analytics.analytics import model_diff,dataset_diff,create_shap_global_p
 
 
 def run_error_analysis():
-    create_shap_global_plots()
+    # create_shap_global_plots()
     dataset_diff()
     # dataset_diff('mouse2','worm1')
     # model_diff('mouse1', 'worm1')

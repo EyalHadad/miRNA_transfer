@@ -5,19 +5,19 @@ import numpy as np
 from sklearn import metrics
 from datetime import datetime
 import xgboost as xgb
-
+import pandas as pd
 from src.models.miRNA_transfer_subclass import api_model
 from src.models.csv_handler import save_metrics
 
 
-def load_trained_model(model_type,org_name):
+def load_trained_model(model_type,org_name,models_f):
     if model_type == 'base':
         model = api_model(MODEL_INPUT_SHAPE)
         model.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
-        load_weights_path = os.path.join(MODELS_OBJECTS_PATH, f"{org_name}/")
+        load_weights_path = os.path.join(models_f, f"{org_name}/")
         model.load_weights(load_weights_path)
     else:
-        model_name = os.path.join(MODELS_OBJECTS_PATH, 'Xgboost_{0}.dat'.format(org_name))
+        model_name = os.path.join(models_f, f"{org_name}.dat")
         model = xgb.XGBClassifier(kwargs=XGBS_PARAMS)  # init model
         model.load_model(model_name)
 
@@ -52,7 +52,7 @@ def create_sequence(miRNA, mRNA):
     return total_res
 
 
-def create_evaluation_dict(t_model_name, org_name, pred, y):
+def create_evaluation_dict(t_model_name, org_name, pred, y,metric_to_return='ACC'):
     model_name = '{0}_{1}'.format(t_model_name, org_name)
     date_time = datetime.now().strftime("%d_%m_%Y %H_%M_%S")
     print(f" There are {np.sum(np.isnan(pred))} nan predictions")
@@ -61,10 +61,11 @@ def create_evaluation_dict(t_model_name, org_name, pred, y):
     eval_dict = {'Model': model_name, 'Date': date_time, 'ACC': metrics.accuracy_score(y, np.round(pred))}
     eval_dict['FPR'], eval_dict['TPR'], thresholds = metrics.roc_curve(y, pred)
     eval_dict['AUC'] = metrics.auc(eval_dict['FPR'], eval_dict['TPR'])
-    eval_dict['MCC'] = metrics.matthews_corrcoef(y, np.round(pred))
+    eval_dict['PR'] = metrics.precision_score(y, np.round(pred), average='micro')
     eval_dict['F1_score'] = metrics.f1_score(y, np.round(pred))
     save_metrics(eval_dict)
-    return date_time, org_name, eval_dict[METRIC]
+    print("ACC:",eval_dict['ACC'],"___PR:",eval_dict['PR'])
+    return date_time, org_name, eval_dict[metric_to_return]
 
 
 def create_res_graph(tabel_dict,org_name,model_type,trans_epochs):
@@ -77,6 +78,13 @@ def create_res_graph(tabel_dict,org_name,model_type,trans_epochs):
             row_to_write = [f"{model_type}_{trans_epochs}"] + [str(round(tabel_dict[c][t], 2)) for t in tabel_dict[c].keys()] + ['\n']
             file.write(','.join(row_to_write))
 
+
+def datasets_list_data_extraction(dataset_list,what_data):
+    data = pd.DataFrame()
+    for d in dataset_list:
+        df = pd.read_csv(os.path.join(PROCESSED_PATH, f"{d}_{what_data}.csv"), index_col=False)
+        data = data.append(df)
+    return data
 
 # def create_transfer_graphs(compare_to_xgboost = True ):
 #     csv_files = [x for x in os.listdir(MODELS_OBJECTS_GRAPHS) if '.csv' in x]

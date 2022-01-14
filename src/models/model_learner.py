@@ -9,7 +9,7 @@ import numpy as np
 from constants import *
 from sklearn.model_selection import train_test_split
 import os
-from src.models.models_handler import create_sequence, create_evaluation_dict, load_trained_model
+from src.models.models_handler import *
 from src.models.csv_handler import save_metrics
 
 
@@ -27,16 +27,11 @@ class ModelLearner:
     sequences = None
     sequences_tst = None
 
-    def __init__(self, org_name, m_name):
+    def __init__(self, org_name):
         self.org_name = org_name
-        self.model_name = m_name
 
-    def prep_model_training(self, aa1=False):
-        if aa1:
-            train = pd.read_csv(os.path.join(PROCESSED_ALL_AGAINST_PATH, "{0}_train.csv".format(self.org_name)), index_col=False)
-        else:
-            train = pd.read_csv(os.path.join(PROCESSED_TRAIN_PATH, "{0}_train.csv".format(self.org_name)), index_col=False)
-        # train = train.iloc[:500, :]
+    def prep_model_training(self,datasets):
+        train = datasets_list_data_extraction(datasets,"train")
         print("---Train data was loaded---\n")
         print("training data shape:", train.shape)
         train['sequence'] = train.apply(lambda x: create_sequence(x['miRNA sequence'], x['target sequence']), axis=1)
@@ -78,7 +73,7 @@ class ModelLearner:
 
     def model_explain(self):
         print("Shap values\n")
-        if self.model_name == 'base':
+        if self.model_name == 'Base':
             explainer = shap.DeepExplainer(self.model, self.x.values.astype('float'))
         else:
             explainer = shap.TreeExplainer(self.model, self.x.values.astype('float'))
@@ -105,11 +100,12 @@ class ModelLearner:
         plt.savefig(os.path.join(MODELS_FEATURE_IMPORTANCE, '{0}_bar.png'.format(title)))
         plt.clf()
 
-    def evaluate_model(self, model_type,aa1=False):
-        if aa1:
-            test = pd.read_csv(os.path.join(PROCESSED_ALL_AGAINST_PATH, "{0}_test.csv".format(self.org_name)), index_col=False)
-        else:
-            test = pd.read_csv(os.path.join(PROCESSED_TEST_PATH, "{0}_test.csv".format(self.org_name)), index_col=False)
+    def evaluate_model(self, model_type,models_folder_name,model_name,datasets,test_all = False,metric='ACC'):
+        test = datasets_list_data_extraction(datasets,"test")
+        model_in_datasets = any(model_name in string for string in datasets)
+        if test_all and not model_in_datasets:
+            to_add = datasets_list_data_extraction(datasets,"train")
+            test = test.append(to_add)
         print("---Test data was loaded---\n")
         test['sequence'] = test.apply(lambda x: create_sequence(x['miRNA sequence'], x['target sequence']), axis=1)
         y = test['label']
@@ -117,13 +113,13 @@ class ModelLearner:
         X.drop('sequence', axis=1, inplace=True)
         x = X.astype("float")
         if self.model is None:
-            self.model = load_trained_model(model_type, self.org_name)
+            self.model = load_trained_model(model_type, model_name,models_folder_name)
 
         if model_type == 'base':
             pred = self.model.predict(x)
         else:
             pred = self.model.predict_proba(x)[:,1]
-        date_time, model_name, auc = create_evaluation_dict(self.model_name, self.org_name, pred, y)
+        date_time, model_name, auc = create_evaluation_dict(self.model_name, self.org_name, pred, y,metric)
 
         # total_frame = x.copy()
         # total_frame["index"] = x.index

@@ -37,7 +37,7 @@ def draw_dataset_feature_importance_lineplot():
     f_path = os.path.join(MODELS_FEATURE_IMPORTANCE, 'datasets_diff_features_lineplot.csv')
     org_data = pd.read_csv(f_path, index_col=False)
     for d in DATASETS:
-        for f in ['src','dst']:
+        for f in ['src', 'dst']:
             data = org_data.copy()
             data = data[data[f] == d]
             # data = data.iloc[[0, 10, 20, 30, 40, 48], :]
@@ -67,27 +67,40 @@ def create_datasets_features_importance_file(f_names):
     create_imp_features_file(cross_org_dataset_list, imp_features)
 
 
-def create_heatmaps(f_names):
-    heatmap_dict = {"cmap": "RdBu_r", "square": True, "linewidths": 3, "annot": True, "vmin": 0, "vmax": 1}
+def create_heatmaps(f_names, metric, t_type):
+    heatmap_dict = {"cmap": "RdBu_r", "square": True, "linewidths": 3, "annot": True, "vmin": 0, "vmax": 1,"cbar_kws":None}
     data1 = pd.read_csv(os.path.join(MODELS_CROSS_ORG_TABELS, f_names['miRNA_Net']), index_col=0)
     data2 = pd.read_csv(os.path.join(MODELS_CROSS_ORG_TABELS, f_names['xgboost']), index_col=0)
-    heatmap_dict['vmin'] = min(data1.values.min(), data2.values.min())
-    heatmap_dict['vmax'] = max(data1.values.max(), data2.values.max())
-    draw_heatmap(data=data1, img_name=f"miRNA_Net_heatmap.png", img_title='miRNA_Net', **heatmap_dict)
-    draw_heatmap(data=data2, img_name=f"xgboost_heatmap.png", img_title='xgboost', **heatmap_dict)
+    if metric == 'ACC':
+        heatmap_dict['vmin'] = 0.5
+        heatmap_dict['cmap'] = "RdBu_r"
+        heatmap_dict['cbar_kws'] = {'label': 'ACC'}
+
+    else:
+        heatmap_dict['vmin'] = 0
+        heatmap_dict['cmap'] = sns.diverging_palette(145, 300, s=60, as_cmap=True)
+        heatmap_dict['cbar_kws'] = {'label': 'F1 Score'}
+    # heatmap_dict['vmin'] = min(data1.values.min(), data2.values.min())
+    # heatmap_dict['vmax'] = max(data1.values.max(), data2.values.max())
+    draw_heatmap(data=data1, img_name=f"base_{t_type}_heatmap_{metric}.png",
+                 img_title=f"base_{t_type}_heatmap_{metric}", **heatmap_dict)
+    draw_heatmap(data=data2, img_name=f"xgboost_{t_type}_heatmap_{metric}.png",
+                 img_title=f"xgboost_{t_type}_heatmap_{metric}", **heatmap_dict)
     new_data = data1 - data2
-    heatmap_dict['vmin'] = new_data.values.min()
-    heatmap_dict['vmax'] = new_data.values.max()
-    draw_heatmap(data=new_data, img_name=f"diff.png", img_title='Models Differences', **heatmap_dict)
+    limit_num = max(new_data.values.max(), abs(new_data.values.min()))
+    heatmap_dict['vmin'] = -limit_num
+    heatmap_dict['vmax'] = limit_num
+    draw_heatmap(data=new_data, img_name=f"{t_type}_{metric}_diff.png", img_title=f"{t_type}_{metric}_diff",
+                 **heatmap_dict)
 
 
 def draw_heatmap(data, img_name, img_title, xlabel='Testing Dataset', ylabel='Training Dataset', **kwargs):
     ax = sns.heatmap(data, **kwargs)
-    plt.title(img_title, fontsize=15)
+    # plt.title(img_title, fontsize=15)
     plt.xlabel(xlabel, fontsize=10)
     plt.ylabel(ylabel, fontsize=10)
     ax.xaxis.label.set_color('purple')
-    ax.title.set_color('purple')
+    # ax.title.set_color('purple')
     ax.yaxis.label.set_color('purple')
     ax.figure.tight_layout()
     plt.savefig(os.path.join(MODELS_GRAPHS_HEATMAP, img_name))

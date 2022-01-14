@@ -16,26 +16,24 @@ from keras.layers import Input
 class BaseTrainObj(ModelLearner):
     history = None
 
-    def __init__(self, org_name, m_name):
-        ModelLearner.__init__(self, org_name, m_name)
+    def __init__(self, org_name):
+        self.m_name = 'Base'
+        self.model_name = 'Base'
+        ModelLearner.__init__(self, org_name)
 
-    def train_model(self, aa1=False):
-        super().prep_model_training(aa1)
+    def train_model(self,models_folder_name,model_name,datasets):
+        super().prep_model_training(datasets)
         print("---Start training {0} on {1}---\n".format(self.model_name, self.org_name))
         print(f"ann input {self.x.shape}, cnn input {self.sequences.shape}")
         self.model = api_model(self.x.shape[-1],)
         self.model.compile(optimizer=SGD(lr=0.01, momentum=0.9, clipnorm=1.0), loss='binary_crossentropy',metrics=['acc'])
-        self.history = self.model.fit(self.x, self.y, epochs=TRAIN_EPOCHS,validation_data=(self.xval, self.yval))
+        self.history = self.model.fit(self.x, self.y, epochs=50,validation_data=(self.xval, self.yval))
         # print(self.model.summary())
         print("---Learning Curves---\n")
         self.plot_learning_curves()
         print("---Saving model---\n")
-        if aa1:
-            model_name = os.path.join(MODELS_OBJECTS_PATH,f"aa1_{self.org_name}/")
-            self.model.save_weights(model_name)
-        else:
-            model_name = os.path.join(MODELS_OBJECTS_PATH,f"{self.org_name}/")
-            self.model.save_weights(model_name)
+        model_name = os.path.join(MODELS_OBJECTS_PATH,models_folder_name,model_name+"/")
+        self.model.save_weights(model_name)
         print("---{0} model saved---\n".format(self.model_name))
 
     def plot_learning_curves(self):
@@ -59,10 +57,13 @@ class BaseTrainObj(ModelLearner):
         plt.savefig(os.path.join(MODELS_OUTPUT_PATH, 'Base {0} Loss.png'.format(self.org_name)))
         plt.clf()
 
-    def model_explain(self):
+    def model_explain(self,models_f):
         print("---Explain model---\n")
         super().model_explain()
 
     def get_shap_values(self):
         import shap
         shap_values = shap.TreeExplainer(self.model).shap_values(X_train)
+
+    def __str__(self):
+        return "Base"

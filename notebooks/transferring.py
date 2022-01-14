@@ -5,39 +5,46 @@ from src.models.models_handler import *
 import copy
 
 
-def run_transfer(model_type='base', trans_epochs=20):
-    dataset_list = copy.deepcopy(DATASETS)
-    transfer_dict = {}
-    vanilla_model_dict = {}
-    transfer_size = TRANSFER_SIZE_LIST
-    for org_name in dataset_list:
-        rest = copy.deepcopy(DATASETS)
-        rest.remove(org_name)
-        if model_type == 'base':
-            trans_obj = BaseTransferObj(org_name)
-        else:
-            trans_obj = XgboostTransferObj(org_name)
-        transfer_dict[org_name] = {}
-        vanilla_model_dict[org_name] = {}
-        for dst_org_name in rest:
-            trans_obj.load_dst_data(dst_org_name)
-            transfer_dict[org_name][dst_org_name] = {}
-            vanilla_model_dict[org_name][dst_org_name] = {}
-            for t_size in transfer_size:
-                v_auc = trans_obj.train_new_model(t_size, model_type)
-                vanilla_model_dict[org_name][dst_org_name][t_size] = v_auc
-                auc = trans_obj.retrain_model(t_size,model_type,trans_epochs)
-                transfer_dict[org_name][dst_org_name][t_size] = auc
-
-    save_cross_org_table(transfer_dict, model_type)
-    save_transfer_table(transfer_dict, model_type, trans_epochs)
-    save_transfer_table(vanilla_model_dict, model_type, 'baseline')
+def run_transfer(model_type, trans_epochs, transfer_dict, tran_folder):
+    xgb_transfer_dict, base_transfer_dict = {}, {}
+    xgb_vanilla_dict, base_vanilla_dict = {}, {}
+    for src_model_name, src_dataset_list in transfer_dict.items():
+        xgb_transfer_dict[src_model_name] = {}
+        xgb_vanilla_dict[src_model_name] = {}
+        base_transfer_dict[src_model_name] = {}
+        base_vanilla_dict[src_model_name] = {}
+        base_obj = BaseTransferObj(src_model_name)
+        xgb_obj = XgboostTransferObj(src_model_name)
+        dest_dict = copy.deepcopy(transfer_dict)
+        del dest_dict[src_model_name]
+        for dst_model_name, dst_dataset_list in dest_dict.items():
+            base_obj.load_dst_data(dst_model_name,dst_dataset_list)
+            xgb_obj.load_dst_data(dst_model_name,dst_dataset_list)
+            xgb_transfer_dict[src_model_name][dst_model_name] = {}
+            xgb_vanilla_dict[src_model_name][dst_model_name] = {}
+            base_transfer_dict[src_model_name][dst_model_name] = {}
+            base_vanilla_dict[src_model_name][dst_model_name] = {}
+            for t_size in TRANSFER_SIZE_LIST:
+                v_score = base_obj.train_new_model(t_size, 'base')
+                base_vanilla_dict[src_model_name][dst_model_name][t_size] = v_score
+                score = base_obj.retrain_model(t_size,model_type,trans_epochs)
+                base_transfer_dict[src_model_name][dst_model_name][t_size] = score
+                v_score = xgb_obj.train_new_model(t_size, 'xgboost')
+                xgb_vanilla_dict[src_model_name][dst_model_name][t_size] = v_score
+                score = xgb_obj.retrain_model(t_size, model_type, trans_epochs)
+                xgb_transfer_dict[src_model_name][dst_model_name][t_size] = score
+    save_transfer_table(base_transfer_dict, 'base', trans_epochs,tran_folder)
+    save_transfer_table(base_vanilla_dict, 'base', 'baseline',tran_folder)
+    save_transfer_table(xgb_transfer_dict, 'xgboost', trans_epochs,tran_folder)
+    save_transfer_table(xgb_vanilla_dict, 'xgboost', 'baseline',tran_folder)
 
 
 
 if __name__ == '__main__':
-    run_transfer(model_type='base', trans_epochs=20)
-    run_transfer(model_type='xgboost', trans_epochs=20)
+    transfer_folder_name = "dataset_models_" + datetime.now().strftime("%d_%m_%Y %H_%M_%S")
+    # run_training('base', TRAIN_DICT_REG, models_folder_name, 'datasets')
+    run_transfer('base',20,TRAIN_DICT_REG,transfer_folder_name)
+    # run_transfer(model_type='xgboost', trans_epochs=20)
     # for i in range(20,120,20):
     #     run_transfer(model_type='base', trans_epochs=i)
     #     print(i)

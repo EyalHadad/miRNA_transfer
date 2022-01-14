@@ -16,7 +16,7 @@ logging.getLogger("tensorflow").setLevel(logging.CRITICAL)
 import tensorflow as tf
 from tensorflow.python.keras.models import save_model
 from tensorflow.python.keras.models import load_model
-from src.models.models_handler import save_metrics, create_sequence, create_evaluation_dict
+from src.models.models_handler import *
 from keras.optimizers import SGD
 import xgboost as xgb
 
@@ -43,17 +43,11 @@ class Transfer_obj:
         self.src_model_name = org_name
         self.src_org_name = org_name
 
-    def load_dst_data(self, dst_org_name,aa1=False):
+    def load_dst_data(self, dst_org_name,dataset_list):
         self.dst_org_name = dst_org_name
-        if aa1:
-            train = pd.read_csv(os.path.join(PROCESSED_ALL_AGAINST_PATH, "{0}_train.csv".format(self.dst_org_name)),
-                                index_col=False)
-            test = pd.read_csv(os.path.join(PROCESSED_ALL_AGAINST_PATH, "{0}_test.csv".format(self.dst_org_name)), index_col=False)
-        else:
-            train = pd.read_csv(os.path.join(PROCESSED_TRAIN_PATH, "{0}_train.csv".format(self.dst_org_name)),
-                                index_col=False)
-            test = pd.read_csv(os.path.join(PROCESSED_TEST_PATH, "{0}_test.csv".format(self.dst_org_name)),
-                               index_col=False)
+        train = datasets_list_data_extraction(dataset_list, "train")
+        test = datasets_list_data_extraction(dataset_list, "test")
+
         print("---Data was loaded---\n")
         print("Train data shape:", train.shape)
         print("Test data shape:", test.shape)

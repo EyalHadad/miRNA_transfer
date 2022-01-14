@@ -7,11 +7,9 @@ from constants import *
 from constants import SPECIES, TRANSFER_SIZE_LIST
 
 
-def save_intra_dataset(table_dict, model_type,aa1=False):
+def save_intra_dataset(table_dict, model_type):
     data = pd.DataFrame.from_dict(table_dict, orient='index')
     f_name = os.path.join(MODELS_INTRA_TABELS, f"{model_type}.csv")
-    if aa1:
-        f_name = os.path.join(MODELS_INTRA_TABELS, f"aa1_{model_type}.csv")
     data.to_csv(f_name)
 
 
@@ -22,15 +20,15 @@ def load_intra_tabel(model_type, tabel_dict,aa1=""):
     return in_res_dict, res
 
 
-def save_cross_org_table(tabel_dict, model_type,aa1=""):
+def save_cross_org_table(tabel_dict, model_type):
     print("--- Saving tabel results ---")
     in_res_dict, res = load_intra_tabel(model_type, tabel_dict,aa1)
     for r in tabel_dict.keys():
         res.at[r, r] = round(in_res_dict[r], 2)
         for c in tabel_dict[r].keys():
             res.at[r, c] = round(tabel_dict[r][c][0], 2)
-
-    res.to_csv(os.path.join(MODELS_CROSS_ORG_TABELS, f"{aa1}{model_type}.csv"))
+    time_var = datetime.now().strftime("%d_%m_%Y %H_%M_%S")
+    res.to_csv(os.path.join(MODELS_CROSS_ORG_TABELS, f"{model_type}_{time_var}.csv"))
 
 
 def save_intra_transfer_table(transfer_dict, model_type, trans_epochs):
@@ -76,7 +74,7 @@ def save_aa1_transfer_table(table_dict, model_type, trans_epochs):
 
 
 
-def save_transfer_table(table_dict, model_type, trans_epochs,aa1=""):
+def save_transfer_table(table_dict, model_type, trans_epochs,tran_folder):
     transfer_dict = create_empty_species_dict()
 
     for src_org in table_dict.keys():
@@ -84,7 +82,7 @@ def save_transfer_table(table_dict, model_type, trans_epochs,aa1=""):
             if dst_org[:-1] in transfer_dict[src_org[:-1]]:
                 for s, val in table_dict[src_org][dst_org].items():
                     transfer_dict[src_org[:-1]][dst_org[:-1]][s].append(val)
-    f_name = os.path.join(MODELS_OBJECTS_TRANSFER_TABLES, f"{aa1}{model_type}_{trans_epochs}_transfer.csv")
+    f_name = os.path.join(MODELS_OBJECTS_TRANSFER_TABLES, f"{tran_folder}/{model_type}_{trans_epochs}_transfer.csv")
     with open(f_name, 'w') as f:
         f_header = ['src_org', 'dst_org'] + TRANSFER_SIZE_LIST + ['\n']
         f.write(','.join(str(x) for x in f_header))

@@ -9,23 +9,20 @@ from src.models.csv_handler import save_feature_importance_res
 
 class XgboostTrainObj(ModelLearner):
 
-    def __init__(self,org_name,m_name):
-        ModelLearner.__init__(self,org_name,m_name)
+    def __init__(self,org_name):
+        self.m_name = 'Xgboost'
+        self.model_name = 'Xgboost'
+        ModelLearner.__init__(self,org_name)
 
-
-    def train_model(self,aa1=False):
-        super().prep_model_training(aa1)
+    def train_model(self,models_folder_name,model_name,datasets):
+        super().prep_model_training(datasets)
         print("---Start training {0} on {1}---\n".format(self.model_name,self.org_name))
         self.model = xgb.XGBClassifier(kwargs=XGBS_PARAMS).fit(self.x, self.y, eval_metric=["error", "logloss"], eval_set=[(self.xval, self.yval)])
         print("---Learning Curves---\n")
         # self.plot_learning_curves()
-        if aa1:
-            model_name = os.path.join(MODELS_OBJECTS_PATH, 'aa1_{0}_{1}.dat'.format(self.model_name,self.org_name))
-        else:
-            model_name = os.path.join(MODELS_OBJECTS_PATH, '{0}_{1}.dat'.format(self.model_name,self.org_name))
+        model_name = os.path.join(MODELS_OBJECTS_PATH, models_folder_name, f"{model_name}.dat")
         self.model.save_model(model_name)
         print("---{0} model saved---\n".format(self.model_name))
-
 
     def plot_learning_curves(self):
         results = self.model.evals_result()

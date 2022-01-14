@@ -39,8 +39,10 @@ IMPORTANT_FEATURES = ['miRNAPairingCount_Seed_GU', 'miRNAMatchPosition_1', 'miRN
 SEQUANCE_FEATURES = ['mRNA_start', 'label', 'mRNA_name',
                      'target sequence', 'microRNA_name', 'miRNA sequence', 'full_mrna']
 
-FEATURES_TO_DROP = ['mRNA_start', 'label','mRNA_name','target sequence','microRNA_name','miRNA sequence','full_mrna',
-'canonic_seed','duplex_RNAplex_equals','non_canonic_seed','site_start','num_of_pairs','mRNA_end','constraint']
+FEATURES_TO_DROP = ['mRNA_start', 'label', 'mRNA_name', 'target sequence', 'microRNA_name', 'miRNA sequence',
+                    'full_mrna',
+                    'canonic_seed', 'duplex_RNAplex_equals', 'non_canonic_seed', 'site_start', 'num_of_pairs',
+                    'mRNA_end', 'constraint']
 # ,'Accessibility (nt=21, len=10)',
 MODEL_INPUT_SHAPE = 490
 TRAIN_EPOCHS = 20
@@ -59,5 +61,18 @@ XGBS_PARAMS = {
 
 }
 GOOD_MODEL_SHAP_FEATURES = ['Energy_MEF_local_target', 'Energy_MEF_Duplex', 'miRNAMatchPosition_1',
-                     'miRNAMatchPosition_9', 'miRNAPairingCount_Total_GU']
+                            'miRNAMatchPosition_9', 'miRNAPairingCount_Total_GU']
 METRIC = 'ACC'
+TRAIN_DICT_REG = {"cow1": ["cow1"], "human1": ["human1"], "human2": ["human2"], "human3": ["human3"], "mouse1": ["mouse1"],
+                  "mouse2": ["mouse2"], "worm1": ["worm1"], "worm2": ["worm2"]}
+
+VS4_REG_DICT = {"cow": ["cow1"], "human": ["human1","human2","human3"],"mouse": ["mouse1","mouse2"], "worm": ["worm1","worm2"]}
+VS4_REG_DICT_NO_HUMAN = {"cow": ["cow1"], "human": ["human1","human3"],"mouse": ["mouse1","mouse2"], "worm": ["worm1","worm2"]}
+VS4_REG_DICT_NO_MOUSE = {"cow": ["cow1"], "human": ["human1","human2","human3"],"mouse": ["mouse2"], "worm": ["worm1","worm2"]}
+VS4_REG_DICT_NO_BOTH = {"cow": ["cow1"], "human": ["human1","human3"],"mouse": ["mouse2"], "worm": ["worm1","worm2"]}
+DICT_4VS4 = {"4vs4_models": VS4_REG_DICT, "4vs4_hu_models": VS4_REG_DICT_NO_HUMAN,
+                 "4vs4_mu_models": VS4_REG_DICT_NO_MOUSE, "4vs4_mu_hu_models": VS4_REG_DICT_NO_BOTH}
+
+PART_2_DICT = {"4vs4_models": VS4_REG_DICT}
+
+MODEL_TYPES = ['Base', 'Xgboost']
